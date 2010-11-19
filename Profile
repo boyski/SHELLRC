@@ -1,0 +1,97 @@
+# This is read only by login shells.
+# We try to do _everything_ with shell builtins here for two reasons:
+# (1) speed and (2) PATH may not be fully set up yet.
+
+# Prevent shell from accessing HISTFILE until we're ready.
+unset HISTFILE ||:
+set -o nolog
+
+# Create files writeable by group.
+umask 002
+
+# This is used to avoid multiple `uname -n`s but also as a signal that
+# the .profile has been read in a parent of the current shell.
+# See comments in kshrc.
+if [[ -r /etc/nodename ]]; then
+   export HOSTNAME=$(</etc/nodename)
+else
+   export HOSTNAME=$(uname -n)
+fi
+HOSTNAME=${HOSTNAME%%.*}
+
+# Allow DISPLAY to track "last home" value and let the user know if we set it.
+# To enable this behavior, simply touch ~/.display and make it writeable.
+if [[ -n "$DISPLAY" && -w ~/.display ]]; then
+   if [[ -n "${DISPLAY%%:*}" ]]; then
+      echo "set -x; export DISPLAY=$DISPLAY; set +x" > ~/.display
+   else
+      echo "set -x; export DISPLAY=$HOSTNAME$DISPLAY; set +x" > ~/.display
+   fi
+elif [[ -t 0 && -s ~/.display ]]; then
+   . ~/.display
+fi
+
+# This is necessary for pkguse/onpath/offpath, pushd/popd, etc.
+# Once FPATH is set up we can use the funcs there for all other PATH vars.
+export FPATH=${FPATH:+$FPATH:}$SHELLRC/func
+
+# Set up $ENV file. This causes it to be sourced immediately.
+if [[ -r $HOME/.kshrc ]] ; then
+   if [[ -z "$BASH_VERSION" ]]; then
+      # This funny setup is to prevent processing of $ENV in ksh scripts,
+      # which is the default behavior of ksh93 but not ksh88.
+      export EnvFile=~/.kshrc
+      export ENV='${EnvFile[(_$-=0)+(_=1)-_${-%%*i*}]}'
+   elif [[ -r $HOME/.bashrc ]]; then
+      . $HOME/.bashrc
+   fi
+fi
+
+# The way we handle preferred editor is to always set EDITOR to vi.
+# Users who prefer something different should take advantage of the
+# fact that VISUAL always overrides EDITOR. This ensures that we
+# always get some kind of command-line editing.
+export EDITOR=vi
+
+# (1) Make sure /usr/share/man is present on the man path and
+# (2) ensure it's at the back.
+onpath MANPATH -B /usr/share/man
+
+# Get openwin stuff in there somewhere.
+[[ ! -a /usr/openwin ]] || pkguse -Q -B /usr/openwin
+
+# Now pick up any and all product-specific profiles. Assume order
+# is not critical.
+for _prof in $SHELLRC/Profile.*; do
+   [[ -r $_prof ]] && . $_prof
+done
+unset _prof
+
+# Make sure site-specific bin dirs precede /usr/bin. Also, /opt/local
+# is preferred to /usr/local.
+if [ -d /opt/local ]; then
+    onpath PATH -F/usr/bin /opt/local/bin
+    onpath MANPATH /opt/local/man
+fi
+
+# Also give xpg4 bin etc. precedence over /usr/bin.
+onpath PATH -F/usr/bin /usr/dt/bin /usr/xpg4/bin
+
+# We may need some of these utilities (make, ar) but put them late.
+onpath PATH -B /usr/ccs/bin /usr/sbin /sbin
+
+# Stick these on the front for personal tools ...
+onpath PATH -F ~/$CPU/bin ~/bin
+
+# 1. Get rid of old backward-compatibility hacks (/usr/ucb, /etc).
+# 2. Get "." out of path for safety in heterogeneous environments.
+offpath PATH /usr/ucb /etc /usr/local/bin .
+
+# This removes any redundant entries (not that there should be any).
+cleanpath PATH MANPATH FPATH
+
+# Keep a record of who's using this env and when they last logged in.
+> $SHELLRC/users/${LOGNAME:-${USER:-$(logname)}}
+
+# Now allow interactively-defined functions to go into the history file.
+set +o nolog

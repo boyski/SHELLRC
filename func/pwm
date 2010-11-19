@@ -1,0 +1,9 @@
+#!shell (just so 'file' says the right thing)
+
+# Function for mapping a uid into a full name
+function pwm
+{
+   for i in "$@"; do
+      ypmatch $i passwd | cut -f5 -d:
+   done
+}

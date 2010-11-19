@@ -1,0 +1,9 @@
+################## ClearCase env settings ######################
+
+## SEE ALSO: kshrc.ccase
+
+[[ -d /opt/rational/clearcase ]] || return 0
+
+pkguse /opt/rational/clearcase
+
+################## ClearCase env settings ######################

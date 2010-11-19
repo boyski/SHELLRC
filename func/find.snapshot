@@ -1,0 +1,11 @@
+#!shell (just so 'file' says the right thing)
+
+function find
+{
+    typeset dir=$1; shift
+    if [[ $# > 0 ]]; then
+	command find "$dir" \( -name .snapshot -prune \) -o "$@"
+    else
+	command find "$dir" -name .snapshot -print -prune -o -print
+    fi
+}

@@ -1,0 +1,12 @@
+# Some systems don't support "uname -p" and thus require a hack.
+
+if [[ -a /proc/cpuinfo ]]; then
+    case `uname -m` in
+	*64*) export CPU=Linux_x86_64 ;;
+	*)    export CPU=Linux_i386 ;;
+    esac
+elif [[ -a /bin/hp-pa ]] && /bin/hp-pa; then
+    export CPU=`uname -s`_pa
+else
+    export CPU=`uname -s`_`uname -p`
+fi

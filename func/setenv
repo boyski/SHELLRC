@@ -1,0 +1,7 @@
+#!shell (just so 'file' says the right thing)
+# For old csh-lovers.
+
+function setenv
+{
+    eval export $1="$2"
+}

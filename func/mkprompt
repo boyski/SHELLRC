@@ -1,0 +1,359 @@
+#!/bin/echo error: only source
+#*TAG:52991 12:Jun 24 1998:0644:mkprompt:
+# Author: Brian Hiles <bsh@iname.com>
+# Copyright: (c) 1998
+# Description: construct a custom PS1 prompt
+# Name: mkprompt
+# Sccs: @(#)mkprompt.sh 1.0 1998/02 bsh@iname.com (Brian Hiles)
+# Usage: mkprompt [option|string]...
+# Version: 1.0b
+
+#XXX ksh uses: %{ ... %} ??
+#XXX bash uses: \[ ... \] ??
+#XXX to do: add option for 12-hour time ??
+#XXX to do: make vars ATTR_BELL ATTR_BLINK ... global, stripping leading ESC
+#XXX to do: option to add/subtract features in PS1 (--add|--subtract)
+#XXX alias wtitle 'echo -n "^[]2;\!*^G"' # aixterm, xterm window
+#XXX alias ititle 'echo -n "^[]1;\!*^G"' # aixterm, xterm icon
+#XXX alias wtitle 'echo -n "^[&f0k`echo \!* |wc -c`D\!* "' # hpterm window
+#XXX alias ititle 'echo -n "^[&f-1k`echo \!* |wc -c`D\!* "' # hpterm icon
+#XXX alias wtitle 'echo -n "^[]l\!*^[\"' # sun-cmd window
+#XXX alias ititle 'echo -n "^[]L\!*^[\"' # sun-cmd icon
+#XXX alias wtitle 'echo -n "^[]l\!*^[\"' # dtterm window
+#XXX alias ititle 'echo -n "^[]L\!*^[\"' # dtterm icon
+#XXX to do: autosense window type
+#XXX to do: --icon option
+#XXX to do: --window option (630,aixterm,decterm,xterm,hpterm,sun-cmd,dtterm)
+#XXX X term. emul.: ansi_xterm,color_xterm,dtterm,emu,nxterm,kterm,rxvt,xiterm
+#XXX get rid of --icon option ??
+
+VERBOSE=1 #XXX
+
+#01
+function mkprompt # [option|string]...
+{	set -o noglob
+	typeset IFS TERM=${TERM:-dumb} bell=$(print \\007) esc=$(print \\033)
+	typeset ext ipost ipre nl='
+' ps1 wpost wpre xport xterm
+	[[ $#$1 = @(0|1--) ]] &&
+	{	# no arguments: output code suitable for re-input
+		[[ $PS1 = *\${HOSTNAME}* ]] &&
+		print -r ': ${HOSTNAME:=$(hostname)}'
+		[[ $PS1 = *SECONDS* ]] &&
+		print "SECONDS=\$(date '+%H*3600+%M*60+%S')" &&
+		print 'typeset -Z2 _h _m _s\ntypeset -i _t'
+		[[ $PS1 = *PWD* ]] &&
+		print '_ps1=\~'
+		[[ $PS1 = *\${SHLVL}* ]] && print 'typeset -i10 -x SHLVL' \
+		"\nalias -x ksh='SECONDS=\$SECONDS SHLVL=${SHLVL:-0}+1 ksh'"
+		[[ " $(typeset +x) " = *' 'PS1' '* ]] &&
+		print -n 'typeset -x _ps1 '
+		print -r -- "PS1='$PS1'"
+		return 0
+	}
+	#XXX unused options: fgqvy
+	[[ $#$1 = 1@(-h|--help) ]] &&
+	{	print -r -- \
+'-a|--alert	- sound a bell
+-b|--bold	- turn on bold video
+-c|--cwd	- show current working directory
+-d|--date	- show date
+-e|--exmark	- show an exclamation mark
+-h|--history	- show history number
+-i|--icon	- set title of icon with prompt string
+-j|--newline	- show a newline
+-k|--blink	- turn on blinking video
+-l|--level	- show shell level
+-m|--dim	- turn on dim video
+-n|--hostname	- show hostname
+-o|--status	- show exit status of previous command
+-p|--prompt	- show prompt character (dollar sign or hash mark)
+-r|--reverse	- show reverse video
+-s|--standout	- turn on reverse video
+-t|--time	- show 24-hour time
+-u|--user	- show username
+-w|--window	- set the title of window with prompt string.
+-x|--export	- export PS1 to subshells.
+-z|--zero	- initialize prompt (use with --window/--icon options.)
+Without arguments "mkprompt" outputs shell code to recreate the current prompt.
+'
+		return 0
+	}
+	while (($#))
+	do	case $1 in
+		(--)	break ;;
+		(-a|--alert)
+			ATTR_BELL=${ATTR_BELL#$esc} \
+			: ${ATTR_BELL:=$(tput -T$TERM bel)}
+			ps1="$ps1${ATTR_BELL:-$bell}" ;;
+		(-b|--bold)
+			ATTR_SMSO=${ATTR_SMSO#$esc} \
+			: ${ATTR_SMSO:=$(tput -T$TERM smso)}
+			ps1="$ps1$esc$ATTR_SMSO" ;;
+		(+b|--unbold)
+			ATTR_RMSO=${ATTR_RMSO#$esc} \
+			: ${ATTR_RMSO:=$(tput -T$TERM rmso)}
+			ps1="$ps1$esc$ATTR_RMSO" ;;
+		(-c|--cwd)
+			ext="$ext${nl}_ps1=\\~" \
+			ps1="$ps1\${_ps1[(1-0\${PWD%%@([!/]*|\$HOME*)}1)]" \
+			ps1="$ps1:-}\${PWD#\$HOME}" ;;
+		(-d|--date)
+			# Warning: not dynamically calculated each display
+			ps1="$ps1$(date +%D)" ;;
+		(-e|--exmark)
+			ps1="$ps1!!" ;;
+		(-h|--history)
+			ps1="$ps1!" ;;
+		(-i|--icon)
+			#if [[ $1 = --icon=* ]]
+			#then	xterm=${1#--icon=}
+			#else	xterm=${1#-i}
+				#[[ -z $xterm ]] && xterm=$2 shift
+			#fi
+			case $xterm in
+			(630?(-*))
+				ipre= ipost= ;; #XXX
+			(dtterm?(-*)|sun-cmd?(-*))
+				ipre=$esc]L ipost=$esc ;;
+			(hpterm?(-*))
+				ipre=$esc\&f-1k\${#PS1}D ipost=' ' ;;
+			(xterm?(-*))
+				ipre=$esc]1\; ipost=$bell ;;
+			esac
+${VERBOSE:+print -ru2 [ xterm: $xterm ]}
+_inst="$(print -nr -- "$ipre"|od -c|head -1)"
+${VERBOSE:+print -ru2 [ preamble: ${_inst#0000000  } ]}
+_inst="$(print -nr -- "$ipost"|od -c|head -1)"
+${VERBOSE:+print -ru2 [ postamble: ${_inst#0000000  } ]}
+			;;
+		(-j|--newline)
+			ps1="$ps1$nl" ;;
+		(-k|--blink)
+			ATTR_BLINK=${ATTR_BLINK#$esc} \
+			ATTR_SGR0=${ATTR_SGR0#$esc} \
+			: ${ATTR_BLINK:=$(tput -T$TERM blink)} \
+			${ATTR_SGR0:=$(tput -T$TERM sgr0)}
+			ps1="$ps1$esc$ATTR_BLINK" ;;
+		(-l|--level)
+			ext="$ext${nl}typeset -i10 -x SHLVL" \
+			ext="$ext${nl}alias -x ksh='SHLVL=\${SHLVL:-0}+1 ksh'" \
+			ps1="$ps1\${SHLVL}" ;;
+		(-m|--dim)
+			ATTR_DIM=${ATTR_DIM#$esc} \
+			ATTR_SGR0=${ATTR_SGR0#$esc} \
+			: ${ATTR_DIM:=$(tput -T$TERM dim)} \
+			${ATTR_SGR0:=$(tput -T$TERM sgr0)}
+			ps1="$ps1$esc$ATTR_DIM" ;;
+		(+m|--undim)
+			ATTR_SGR0=${ATTR_SGR0#$esc} \
+			: ${ATTR_SGR0:=$(tput -T$TERM sgr0)}
+			ps1="$ps1$esc$ATTR_SGR0" ;;
+		(-n|--hostname)
+			# Ksh93 does command substitution within PS1;
+			# ksh88 only implements variable substitution.
+			ps1="$ps1\${HOSTNAME}" \
+			: ${HOSTNAME:=$(hostname)} ;;
+		(-o|--status)	# cannot as yet suppress display if $? equals 0
+			ps1="$ps1[\$?]" ;; #XXX no [, ] !!
+		(-p|--prompt)
+			# Warning: not dynamically calculated each display
+			if [[ $(LANG=C /bin/id) = uid=0\(* ]]
+			then	ps1="$ps1#"
+			else	ps1="$ps1\\$"
+			fi ;;
+		(-r|--reverse)
+			ATTR_REV=${ATTR_REV#$esc} \
+			ATTR_SGR0=${ATTR_SGR0#$esc} \
+			: ${ATTR_REV:=$(tput -T$TERM rev)} \
+			${ATTR_SGR0:=$(tput -T$TERM sgr0)}
+			ps1="$ps1$esc$ATTR_REV" ;;
+		(+r|--unreverse)
+			ATTR_SGR0=${ATTR_SGR0#$esc} \
+			: ${ATTR_SGR0:=$(tput -T$TERM sgr0)}
+			ps1="$ps1$esc$ATTR_SGR0" ;;
+		(-s|--standout)
+			ATTR_SMSO=${ATTR_SMSO#$esc} \
+			ATTR_RMSO=${ATTR_RMSO#$esc} \
+			: ${ATTR_SMSO:=$(tput -T$TERM smso)} \
+			${ATTR_RMSO:=$(tput -T$TERM rmso)}
+			ps1="$ps1$esc$ATTR_SMSO" ;;
+		(+s|--unstandout)
+			ATTR_RMSO=${ATTR_RMSO#$esc} \
+			: ${ATTR_RMSO:=$(tput -T$TERM rmso)}
+			ps1="$ps1$esc$ATTR_RMSO" ;;
+		(-t|--time)
+			ext="$ext${nl}typeset -\${xport}Z2 _h _m _s" \
+			ext="$ext${nl}typeset -i\$xport _t" \
+			ext="$ext${nl}SECONDS=\$(date '+%H*3600+%M*60+%S')" \
+			ext="$ext${nl}_ps1=\\~" \
+			ps1="$ps1\${_ps1[1+((_t=SECONDS)==(_s=_t%60)==" \
+			ps1="$ps1(_m=_t/60%60)==(_h=_t/3600%24))]}" \
+			ps1="$ps1\$_h:\$_m:\$_s" ;;
+			#ps1="$ps1(_m=(_t/60)%60)==(_h=(_t/3600)%24))]}" \
+		(-u|--user)
+			ps1="$ps1\${USER:-\${LOGNAME}}" ;;
+		(-w|--window)
+			#if [[ $1 = --window=* ]]
+			#then	xterm=${1#--window=}
+			#else	xterm=${1#-w}
+				#[[ -z $xterm ]] && xterm=$2 shift
+			#fi
+			case $xterm in
+			(630?(-*))
+				wpre="$esc[?\${#PS1};0v" wpost= ;;
+			(dtterm?(-*)|sun-cmd?(-*))
+				wpre=$esc]l wpost=$esc ;;
+			(hpterm?(-*))
+				wpre=$esc\&f0k\${#PS1}D wpost=' ' ;;
+			(xterm?(-*))
+				wpre=$esc]2\; wpost=$bell ;;
+			esac
+${VERBOSE:+print -ru2 [ xterm: $xterm ]}
+_inst="$(print -nr -- "$wpre"|od -c|head -1)"
+${VERBOSE:+print -ru2 [ preamble: ${_inst#0000000  } ]}
+_inst="$(print -nr -- "$wpost"|od -c|head -1)"
+${VERBOSE:+print -ru2 [ postamble: ${_inst#0000000  } ]}
+			;;
+		(-z|--zero) #XXX will not work!
+			ps1= ;; #XXX ps1="$ps1\$PS1=" ??
+		(--*)	print -ru2 "$0: error: unknown option \"$1\""
+			return 2 ;;
+		(-??*)	#XXX convert into builtins:
+			eval "shift
+			set -- $(print -r -- "${1#-}" |
+			sed 's/./-& /g; s/ -$//') \"\$@\""
+			continue ;;
+		(-?)	print -ru2 "$0: error: unknown option \"$1\""
+			return 2 ;;
+		(*)	ps1="$ps1$1" ;;
+		esac
+		shift
+	done
+	# just in case: turn off all video attributes
+	ATTR_SGR0=${ATTR_SGR0#$esc} : ${ATTR_SGR0:-$(tput -T$TERM sgr0)}
+	# ksh88 bug: even a quoted "[" cannot be matched in patterns!
+	[[ $ps1 = *$esc* && $ps1 != *$esc$ATTR_SGR0 ]] &&
+	ps1="$ps1$esc$ATTR_SGR0"
+	[[ -n $ps1 && $ps1 != *' ' ]] && ps1="$ps1 "
+	# uncomment line below to explicate constructed PS1 and return
+	#print -n "$ps1" | od -c >&2 && return
+	trap "eval '$ext'; ${xport:+typeset -x _ps1} PS1='$ps1'" EXIT
+	PS1="$ps1"
+	return 0
+}
+
+#02 EMBEDDED MANPAGE FOR "scr2man"
+: '
+#++
+NAME
+	mkprompt - construct a custom PS1 prompt
+
+SYNOPSIS
+	mkprompt option|string ...
+	mkprompt
+
+DESCRIPTION
+	Mkprompt constructs a PS1 prompt for use under ksh(1) and other
+	shells that perform variable substitution on PS1 and implement
+	arrays.
+
+	None of the options insert any whitespace, etc, into PS1. To do
+	so, apply an explicit space character (which has to be protected
+	by quotes) as a command line parameter. However, one space is
+	appended if PS1 not already terminated by whitespace.
+
+	Note that PS1 is not automatically exported to subshells by
+	mkprompt, even if the "--level" option is active.
+
+	From the SunOS 4.x terminfo(5) man page:
+
+	"If your terminal has one or more kinds of display attri-
+	butes, these can be represented in a number of different
+	ways. You should choose one display form as standout mode
+	(see curses(3V)), representing a good, high contrast, easy-
+	on-the-eyes, format for highlighting error messages and
+	other attention getters. (If you have a choice, reverse-
+	video plus half-bright is good, or reverse-video alone; how-
+	ever, different users have different preferences on dif-
+	ferent terminals.)"
+
+	URL of xterm FAQ. #XXX
+
+OPTIONS
+	-a|--alert	- Sound a bell (if term supports capability.)
+	-b|--bold	- Turn on bold video (if term supports capability.)
+	-c|--cwd	- Show current working directory.
+	-d|--date	- Show date.
+	-e|--exmark	- Show an exclamation mark.
+	-h|--history	- Show history number.
+	-i|--icon	- Set title of icon with prompt string.
+	-j|--newline	- Show a newline.
+	-k|--blink	- Turn on blinking video (if term supports capability.)
+	-l|--level	- Show shell level.
+	-m|--dim	- Turn on dim video (if term supports capability.)
+	-n|--hostname	- Show hostname.
+	-o|--status	- Show exit status of previous command.
+	-p|--prompt	- Show prompt character (dollar sign or hash mark.)
+	-r|--reverse	- Show reverse video (if term supports capability.)
+	-s|--standout	- Turn on reverse video (if term supports capability.)
+	-t|--time	- Show 24-hour time.
+	-u|--user	- Show username.
+	-w|--window	- Set title of window with prompt string.
+	-x|--export	- Export PS1 to subshells.
+	-z|--zero	- Initialize prompt (use with --window/--icon options.)
+
+	Bi-modal options (e.g. -r|--reverse) can be complemented by
+	specifying +<option>|--un<option> (e.g. +r|--unreverse).
+
+RETURN CODE
+	0 for successful creation of prompt, 2 for usage error.
+
+EXAMPLE
+	mkprompt "[" --time "] " --prompt
+	-or-
+	mkprompt "[" -t "] " -p
+
+	mkprompt --user "@" --hostname --exmark --cwd --prompt
+	-or-
+	mkprompt -u "@" -hecp
+
+ENVIRONMENT
+	HOSTNAME
+	LOGNAME
+	LANG
+	LOCALE
+	PS1
+	USER
+	XTERM #XXX
+
+SEE ALSO
+	alarms(1L), synctime(1L) #XXX?
+
+BUGS
+	Unfortunately, mkprompt cannot determine command by command for
+	all versions of ksh(1) if the user has root privileges. The
+	prompt character ("--prompt" option) is statically determined
+	only once at function invocation.
+
+	Mkprompt will probably conflict with those shells that support the
+	special variable SHLVL (as bash(1)). Otherwise, the "--level"
+	option will only work if the shell supports exported aliases.
+	This is removed in ksh93: put the "ksh" alias in the ENV file.
+
+	Mkprompt will turn off _all_ terminal attributes that were set
+	previously, for options #XXX.
+
+	The --level option kludge will attempt to redefine the SHLVL
+	variable that may be builtin in other shells than kornshell.
+
+	Warning: invoking mkprompt sets variables _ps1 and ATTR_* in the
+	current environment, as well as (of course) variable PS1.
+
+	Xterm in X11R5 and later use the environment variable LANG and/or
+	LOCALE.  If the appropriate locale in $X11ROOT/lib/X11/locale.* does
+	not exist, the xterm title may not be able to be reset using the
+	--title option.
+
+#--
+'

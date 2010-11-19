@@ -1,0 +1,89 @@
+#!shell (just so 'file' says the right thing)
+# Borrowed from U/Win by David Korn
+
+# Add to (+), delete from (-), print (.), or set ([=]) window title.
+# Arguments are eval'd before printing.
+# Title text string exported in __xtitlebar.
+# The -C flag sets a standard ClearCase-aware title
+
+function xtitlebar # [+ | - | =] title ...
+{
+	# Ignore inappropriate term types silently and without prejudice
+	case "$TERM" in
+	(sun-*|vt*|vs*|ansi*|xterm*|dtterm*|630*) ;;
+	(*) return 0 ;;
+	esac
+
+	typeset	x t="$__xtitlebar"
+
+	case $1 in
+	(+)	shift
+		case $# in
+		0)	;;
+		*)	for x
+			do	case " $t " in
+				*" $x "*)	;;
+				"  ")		t=$x ;;
+				*)		t="$t $x" ;;
+				esac
+			done
+			case $t in
+			$__xtitlebar)	return 1 ;;
+			esac
+			;;
+		esac
+		;;
+	(-)	shift
+		case $# in
+		0)	;;
+		*)	for x
+			do	case " $t " in
+				*" $x "*)	t="${t%?( )$x*}${t##*$x?( )}" ;;
+				esac
+			done
+			case $t in
+			$__xtitlebar)	return 1 ;;
+			esac
+			;;
+		esac
+		;;
+	(.)	printf "%s\n" "$__xtitlebar"
+		return 0
+		;;
+	(-h)
+		echo "Usage: xtitlebar [+ | - | =] title-string" >&2
+		echo "Adds to (+), deletes from (-), prints (.), or sets (=) window title" >&2
+		return 0
+		;;
+	(-C)	t="$LOGNAME -- ${HOSTNAME:-$(uname -n)} ${CLEARCASE_ROOT:+ -- [${CLEARCASE_ROOT##*/}]}"
+		;;
+	(=)	shift
+		t="$*"
+		;;
+	(*)	t="$*"
+		;;
+	esac
+
+	# Force escape codes into /dev/tty; otherwise if a loop is
+	# redirected to a file while xtitlebar is run via a trap on
+	# DEBUG the escapes will end up in the file.
+
+	export __xtitlebar="$t"
+	eval x=\"$t\"
+	case $TERM in
+	    (vt*|vs*|ansi*|xterm*|dtterm*)
+	       printf "%s" "]0;$x" >/dev/tty
+	       ;;
+	    (sun-*)
+	       printf "%s" "]l$x\\" >/dev/tty
+	       ;;
+	    (630*)
+	       printf "%s" "[?${#x};0v$x" >/dev/tty
+	       ;;
+	    (*)
+	       return 0		# used to return 1 as written by dgk
+	       ;;
+	esac
+
+	return 0
+}

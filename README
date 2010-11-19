@@ -1,0 +1,218 @@
+To set up this ksh env, just copy any existing ~/.profile
+or ~/.kshrc files aside, then:
+
+   % cp /home/.skel/ksh/template/dot-profile ~/.profile
+   % cp /home/.skel/ksh/template/dot-kshrc ~/.kshrc
+
+Never set or modify environment variables, particularly PATH, in the
+kshrc file(s)!  They should be set in the profile. And usually you
+should use the onpath(), offpath(), and pkguse() shell functions to
+modify all path variables. Run any of these with -h to see usage, or
+grep the files in /home/.skel/ksh for examples.
+
+######################################################################
+		     KORN SHELL CHOICES
+######################################################################
+
+There are (at least) two different ksh variants; the traditional one
+installed in /usr/bin/ksh on all Unix systems which is also known as
+"ksh88", and a newer "ksh93" version in /usr/dt/bin/dtksh.  You can use
+either one as your login shell; the choice depends on whether you're a
+conservative lowest-common-denominator person or a
+go-for-the-latest-version type. Ksh93 has many useful features for
+power users, but for non-experts the primary value added is its ability
+to support key mappings.  The two major drawbacks are that (1) dtksh
+may not be installed on a few stripped-down server machines (e.g.
+kong) and (2) there appears to be a bug in its handling of keymappings
+which breaks cut-and-paste.  So we cannot recommend dtksh yet unless
+you're a real power user who can take care of your own problems.
+
+######################################################################
+		     MODIFYING DEFAULTS
+######################################################################
+
+-> If you create a file ~/.aliases.ksh, it will be read by each new
+interactive shell.  This is a good place to put personal aliases etc.
+
+-> By default each shell is given its own history, similar to the way
+the csh works. If you want one history file for all your concurrent
+shells (which is how the ksh works out of the box), run the
+command "chmod -w ~/.khist" (just once, by hand).
+
+-> By default we use the prompt and the window's title bar together;
+the prompt gets the tail end of the current directory while the title
+bar gets your username, the current hostname, and the name of your
+current ClearCase view if you're in one. To modify this setup you need
+to modify the setting of the DEBUG trap and/or the PS1 variable. Do
+this in ~/.kshrc after the standard file is read.  The simplest change
+is to use "trap - DEBUG" to turn it off entirely, then assign whatever
+string you like to PS1.  Or use the mkprompt function described below.
+
+-> The default editor is vi. To change this to emacs or another editor,
+add "export VISUAL=emacs" to the beginning of your .profile. Do not
+change the value of the EDITOR variable. See below for how to
+set/change the default behavior of vi.
+
+-> For emacs users the default backspace character is Delete, aka ^?.
+For vi users it defaults to Backspace (^H).  This is in line with
+current usage.  If you want something different, put the command
+"export ERASE_CHAR='^H'" (where ^ and H are literal) at the top
+of ~/.profile.
+
+-> By default, the current directory (".") is not in PATH. This is
+something which I strongly believe to be a feature. If, after careful
+consideration, you really want '.' on your PATH, then put the command
+"onpath -B ." at the end of ~/.profile.
+
+-> In an rlogin or telnet, when no DISPLAY variable is present, we
+provide logic to set it back to the last-known-good value.  To enable
+this "feature", just "touch ~/.display" once, by hand.  But note that
+the Solaris telnet automatically propagates DISPLAY, so if you use
+telnet instead of rlogin this hack is completely unnecessary.
+
+######################################################################
+		     HELP FOR OLD CSH USERS
+######################################################################
+
+-> The string '!!' is aliased to 'r', the ksh builtin which re-runs
+a command. The ksh equivalent of !foo is 'r foo', and the equivalent
+of !48 is 'r 48'. If you're used to the csh history operator ^xx^yy,
+this can be replaced by 'r xx=yy' in ksh.
+
+-> Complete emulations of pushd/popd/dirs are provided.
+
+-> Converting aliases: if you have your own csh aliases, they can be
+translated into ksh like this:
+
+   csh: alias foo 'bar'
+   ksh: alias foo='bar'
+
+But if your alias takes arguments, you'll need to convert it to a
+ksh function instead:
+
+   csh: alias fproc 'ps -ax | grep -v "grep" | fgrep !* | more'
+   ksh: function fproc { ps -ax | grep -v "grep" | fgrep $* | more; }
+
+Note that the !* in the csh alias becomes a $* in the ksh function.
+
+-> Redirection.  Csh redirection is simple but broken. All other
+shells, which includes this ksh, support a standard method of
+redirection which is more complex but correct. The details go beyond
+the scope of this document but here are examples of the most common
+needs:
+
+   % command > foo 2>&1
+
+The above redirects both stdout and stderr into file 'foo'.
+
+   % command 2>&1 | more
+
+The above combines stdout and stderr and pipes them both to more.
+
+There are many other redirection features and hacks. See Bolsky/Korn
+for details. But remember that these are not ksh features per se; all
+shells besides csh work this way.
+
+######################################################################
+		     USEFUL KSH TIPS
+######################################################################
+
+-> In ksh, after you've cd-ed to a directory you can return to the
+previous dir with "cd -". The variable OLDPWD is also set to the
+previous place.
+
+-> If you pass two arguments to cd, it will replace the first
+occurrence of the first arg in the current working directory and cd to
+the result.  Thus if you're in /dfs/scs/src/webxpress/help and type
+"cd src html" you'll end up in /dfs/scs/html/webxpress/help.
+
+-> The pushd/popd functions support the above too, so "pushd src html"
+will move you to the html path but would also leave the previous dir
+on the stack.
+
+######################################################################
+		     AVAILABLE KSH FUNCTIONS
+######################################################################
+
+The ksh has a facility for 'autoloading' shell functions found via a
+path variable called FPATH. A global location $SHELLRC/func has
+been created to hold generally useful ksh functions.  Thus if you
+have this dir on your FPATH they're available to you. Current functions
+include:
+
+   onpath	- this adds entries to path variables, making sure never
+		to allow redundant entries.  This has many advantages
+		over "export PATH=$PATH:/x/y/z".  Run "onpath -h" for
+		full usage. Note that if a path-var is not specified,
+		PATH is used by default.
+
+   offpath	- removes specified entries from the specified path
+		variable.  See "offpath -h" for usage.
+
+   pkguse	- a wrapper for onpath/offpath.  Example: "pkguse /opt/dce"
+		will prepend /opt/dce/bin to PATH and /opt/dce/man
+		to MANPATH. See "pkguse -h" for usage.
+
+   xtitlebar	- puts its arguments in the title bar of an X window.
+		It's also capable of adding or subtracting substrings
+		from the current title. Run xtitlebar -h for usage.
+
+   keybind	- an advanced topic; allows key bindings to be mapped.
+		No usage msg - see Bolsky/Korn.
+
+   mkprompt	- modifies your prompt string automatically. Run
+		mkprompt -h for a usage msg.
+
+More functions may be added if found generally useful.  Feel free to
+contribute functions or ideas.
+
+Note that these functions are available to any ksh user whose FPATH
+points to them, not just users of this standard environment.  The FPATH
+setting is, of course, handled automatically by the standard env.
+
+######################################################################
+		            VI SETTINGS
+######################################################################
+
+A default group of vi settings is provided along with some useful macros:
+
+The '+' char is bound to a macro which
+will reformat the paragraph in
+which the cursor sits.  For instance,
+hitting '+' in this paragraph
+would make it more
+readable.
+
+The sequence '*Q' will quote all the text below the current cursor
+position by adding a leading "> " as is done in email, and '*U' will
+remove such quoting.
+
+The vi settings can be overridden completely by (a) creating a ~/.exrc
+file with your preferences in it or (b) setting the env var EXINIT at
+the top of ~/.profile.  If, however, you want to override just some of
+the settings, create a file called ~/.profile.vi which appends to
+EXINIT.  E.g. the following line would keep other defaults while
+setting the shiftwidth (default indentation level) to 2:
+
+   EXINIT="$EXINIT"'|set shiftwidth=2'
+
+while this adds a macro to automatically transcribe "teh" to "the":
+
+   EXINIT="$EXINIT"'|abbr teh the'
+
+######################################################################
+		            PRINTING
+######################################################################
+
+To configure a default printer, place "export PRINTER=<printer>" in
+your ~/.profile.  Or you can use the 'pprint' command which has a
+builtin default to a printer called 'prr29a' (on the 29th floor
+of 100 Summer St in the northeast corner).
+
+######################################################################
+			    FURTHER READING
+######################################################################
+
+The bst ksh book is "The New KornShell" by Bolsky and Korn (yes, that
+one), ISBN 0-13-182700-6. Note that this describes ksh93, but with the
+ksh93-only features carefully marked.

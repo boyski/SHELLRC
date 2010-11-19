@@ -1,0 +1,139 @@
+#!shell (just so 'file' says the right thing)
+
+# Default PS1 (in case the user hasn't set it at all).
+#[[ "$PS1" != ?' ' ]] || PS1='$_dirprompt $? !> '
+
+# Running 'dirprompt -l N' leaves the variable $_dirprompt behind,
+# whereas 'dirprompt -p' prints the same result to stdout and does
+# not leave the variable set.
+# If the shell supports it you can just place "$(dirprompt -p)" in the prompt
+# string. Otherwise, the $_dirprompt variable can be fed into the prompt in a
+# two-stage process, e.g.:
+#	trap 'dirprompt -l 3' DEBUG
+#	PS1='$_dirprompt $? !> '
+
+function dirprompt
+{
+    typeset _flag _pwd _num _stdout _prefix _suffix _stack _xwd
+
+    if [[ $PWD = $HOME* ]]; then
+      _pwd=\~${PWD#$HOME}
+    else
+      _pwd=$PWD
+    fi
+
+    # Default: 3 levels of PWD in prompt
+    _xwd=${_pwd##${_pwd%/*/*/*}/}
+
+    OPTIND=1
+    while getopts "hl:pP:S:st:C" _flag; do
+	typeset optarg="$OPTARG"
+	case $_flag in
+	    (h) echo "Usage:\tdirprompt [Flags]" >&2
+		echo "Flags:" >&2
+		echo "\t-l N places N levels of PWD in prompt" >&2
+		echo "\t-P PFX places PFX at start of prompt" >&2
+		echo "\t-S SFX places SFX at end of prompt" >&2
+		echo "\t-p prints the prompt to stdout" >&2
+		echo "\t-s prefixes the prompt with the stack count" >&2
+		echo "\t-t STRING places STRING in the title bar" >&2
+		echo "\t-C places the ClearCase view in the titlebar" >&2
+		return 0
+		;;
+
+	    (\?) return 1 ;;
+
+	    (l)
+	    case "$optarg" in
+		(1) _xwd=${_pwd##${_pwd%/*}/} ;;
+		(2) _xwd=${_pwd##${_pwd%/*/*}/} ;;
+		(3) _xwd=${_pwd##${_pwd%/*/*/*}/} ;;
+		(4) _xwd=${_pwd##${_pwd%/*/*/*/*}/} ;;
+		(5) _xwd=${_pwd##${_pwd%/*/*/*/*/*}/} ;;
+		(6) _xwd=${_pwd##${_pwd%/*/*/*/*/*/*}/} ;;
+		(7) _xwd=${_pwd##${_pwd%/*/*/*/*/*/*/*}/} ;;
+		(8) _xwd=${_pwd##${_pwd%/*/*/*/*/*/*/*}/*/} ;;
+		(9) _xwd=${_pwd##${_pwd%/*/*/*/*/*/*/*}/*/*/} ;;
+	    esac
+	    ;;
+
+	    (P) _prefix=$optarg ;;
+
+	    (S) _suffix=$optarg ;;
+
+	    (p) _stdout=1 ;;
+
+	    (s) _stack=1 ;;
+
+	    (C) optarg="$LOGNAME -- $HOSTNAME"
+		typeset _ccroot=${CLEARCASE_ROOT:-none}
+		optarg="$optarg -- [${_ccroot##*/}]"
+
+		# Show the current editing mode in the title bar.
+		set $(set -o)
+		case $* in
+		    (*vi\ on*)	optarg="$optarg -- VI" ;;
+		    (*gmacs\ on*)	optarg="$optarg -- GMACS" ;;
+		    (*emacs\ on*)	optarg="$optarg -- EMACS" ;;
+		esac
+
+		if [[ $DISPLAY != :* &&
+			( -n "$HOSTNAME" && $DISPLAY != $HOSTNAME:* ) ]]; then
+		    optarg="$optarg -- <${DISPLAY:-<no DISPLAY>}>"
+		fi
+
+		# Would like to drop through with ";&" but some ksh variants
+		# (HPUX) don't support that, or at least didn't at one time.
+		case "$TERM" in
+		    # Some dumb telnet clients, e.g. Windows NT 4.0, don't handle
+		    # xterm escapes. So assume they'll look like straight vt100
+		    # or ansi terminals and that any _good_ telnet can be set
+		    # to vt102 or above. This is a major hack, unfortunately.
+		    (vt100|ansi) ;;
+		    (xterm*|dtterm*|sun-*|vt*|vs*|ansi*) xtitlebar "$optarg" ;;
+		esac
+		;;
+
+	    (t)
+	    case "$TERM" in
+		# Some dumb telnet clients, e.g. Windows NT 4.0, don't handle
+		# xterm escapes. So assume they'll look like straight vt100
+		# or ansi terminals and that any _good_ telnet can be set
+		# to vt102 or above. This is a major hack, unfortunately.
+		(vt100|ansi) ;;
+		(xterm*|dtterm*|sun-*|vt*|vs*|ansi*) xtitlebar "$optarg" ;;
+	    esac
+	    ;;
+	esac
+    done
+    shift $((OPTIND-1))
+
+    case "$_xwd" in
+	(${PWD#/})	_dirprompt="/$_xwd" ;;
+	(/*|\~*)	_dirprompt="$_xwd" ;;
+	(*)		_dirprompt=".../$_xwd" ;;
+    esac
+
+    if [[ -n "$_prefix" ]]; then
+	_dirprompt="$_prefix$_dirprompt"
+    fi
+
+    if [[ -n "$_suffix" ]]; then
+	_dirprompt="$_dirprompt$_suffix"
+    fi
+
+    if [[ -n "$_stack" ]]; then
+	_num=${#DIRSTACK[@]}
+	[[ -z "$BASH_VERSION" ]] || let _num=_num-1
+	if (( $_num > 0 )); then
+	    _dirprompt="[$_num] $_dirprompt"
+	fi
+    fi
+
+    if [[ -n "$_stdout" ]]; then
+	echo "$_dirprompt"
+	unset _dirprompt
+    fi
+
+    unset _flag _pwd _num _stdout _prefix _suffix _xwd
+}

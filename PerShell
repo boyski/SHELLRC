@@ -1,0 +1,165 @@
+#########################################################################
+# This is run once for each shell started as long as $ENV points to it.
+# Do not modify PATH here - do so only in ~/.profile!!!
+#########################################################################
+
+# Prevent shell from accessing HISTFILE until we're ready.
+unset HISTFILE ||:
+set -o nolog
+
+# If this is unset we know we must not be the child of a login shell
+# (maybe an rsh or an 'xterm +ls'), so we source .profile to restore
+# the full environment.
+[[ -n "$SHELLRC" ]] || . ~/.profile
+
+# Stop reading this file now unless we're in an interactive shell.
+# This may be redundant with the ENV=EnvFile setup but no harm done.
+[[ "$-" = *i* ]] || return 0
+
+# Note: everything from here down is seen only by interactive shells.
+
+# Sadly, bash does not support FPATH so we need to preload functions.
+if [[ -n "$BASH_VERSION" ]]; then
+    . $SHELLRC/func/whence.bash
+    . $SHELLRC/func/pathfuncs.sh
+    . $SHELLRC/func/dirfuncs.sh
+    . $SHELLRC/func/xtitlebar
+    . $SHELLRC/func/dirprompt
+fi
+
+# The inability to write ~ is taken as an indicator of whether we've su-ed.
+# This assumes that ~ is NFS-mounted (in the case of root). Also
+# check path, which may assume SVR4/Solaris.
+[[ -w ~ && "$PATH" != "/usr/sbin:/usr/bin" ]] || typeset _sued=1
+# Either of these should indicate uid=0 without having to run `id`.
+if [[ "$HOME" = "/" || "$HOME" = "/root" ]]; then
+    typeset _root=1
+fi
+
+# Set up history on a per-session basis by making unique history
+# files for each interactive shell session. Done this way for
+# similarity to csh; people who like traditional shell behavior
+# should make the directory non-writeable.
+if [[ -d ~/.shellhist && ( -w ~/.shellhist || ! -w ~ ) ]]; then
+    if [[ -n "$_sued" ]]; then
+	export HISTFILE=/tmp/.hist.$LOGNAME.$(date +%m%d%H%M).$$
+    else
+	# Clean out the attic every once in a while ...
+	if [[ $RANDOM = *99 ]]; then
+	    find ~/.shellhist -name hist.\* -atime 3 -exec /bin/rm {} \;
+	fi
+	export HISTFILE=~/.shellhist/hist.$HOSTNAME.$(date +%m%d%H%M).$$
+    fi
+    trap '/bin/rm -f $HISTFILE' EXIT
+elif [[ ! -d ~/.shellhist ]]; then
+    mkdir ~/.shellhist && /bin/chmod 700 ~/.shellhist
+    export HISTFILE=~/.shellhist/hist.$HOSTNAME.$(date +%m%d%H%M).$$
+fi
+set +o nolog
+
+# A mechanism by which a child process can send messages back to
+# its parent shell. Put shell cmds into this ~/.sigusr1, send SIGUSR1
+# to the parent pid, and it will execute the commands in its own
+# context and unlink the file when done.
+#trap 'if [[ -r ~/.sigusr1 ]]; then . ~/.sigusr1 && /bin/rm ~/.sigusr1; fi' USR1
+
+# How modern is this shell version?
+# This seems to break bash so it's turned off ...
+#_shver=88
+#(: ${.sh.version} ) 2>&- && _shver=93
+
+# Some differences for vi- and emacs-users. Do an stty if shell
+# is attached to a terminal, using different default 'erase' chars.
+if [[ "$VISUAL" = *vi* ]]; then
+    [[ -t 1 ]] && stty erase ${ERASE_CHAR:-'^H'} kill '^U' intr '^C'
+    set -o vi
+else
+    [[ -t 1 ]] && stty erase ${ERASE_CHAR:-'^?'} kill '^U' intr '^C'
+    # In case visual=dtpad or similar, we need an explicit editing mode
+    set -o emacs
+fi
+
+# Make arrow keys work to traverse history. This is really only helpful
+# for emacs mode because vi mode is stateful, but we set it up always
+# in case the user switches around.
+alias __A=""
+alias __B=""
+alias __C=""
+alias __D=""
+
+# General-purpose aliases and functions.
+[[ -r $SHELLRC/Aliases ]] && . $SHELLRC/Aliases
+
+# Per-shell configuration for clearcase.
+[[ -r $SHELLRC/PerShell.ccase ]] && . $SHELLRC/PerShell.ccase
+
+# Read in an optional personal aliases/overrides file.
+[[ -r ~/.aliases ]] && . ~/.aliases
+
+# This seems to be helpful if the initial size of an xterm is not 80x24, due
+# to a bug which causes the rows and columns to sometimes get switched (!)
+# Use a subshell because we don't really want to export LINES and COLUMNS.
+#if [[ "$TERM" = xterm* ]]; then
+#    (
+#	eval $(PATH=$PATH:/usr/openwin/bin:/usr/bin/X11:/usr/X11/bin resize -u)
+#	stty rows ${LINES:-0} columns ${COLUMNS:-0}
+#    )
+#    fi
+
+# Set up the prompt, plus a few miscellaneous other things, differently
+# depending on whether we're ourselves or su-ed or root (note that being
+# su-ed and being root are unrelated states though they often go together).
+if [[ -n "$TRANSCRIPT_PS1" ]]; then
+    export PS1=$TRANSCRIPT_PS1
+elif [[ -n "$_sued" || -n "$_root" ]]; then
+    # In an su session (to any id) OR logged in as root.
+    if [[ -n "$_root" ]]; then
+	# We can't use a DEBUG trap for the prompt as root because it
+	# leaves 0-length /tmp/sh* files around, probably due to a bug.
+	export PS1='$HOSTNAME:${PWD##${PWD%/*([^/])/*}/} $? # '
+
+	# Must clear out the titlebar or else it'll be lying.
+	# Unfortunately we can't put the HOSTNAME here - since many
+	# or most systems will use /bin/sh as root's shell it wouldn't
+	# get updated correctly and that would be lying as well.
+	# See comment below for vt100 hack.
+	case "$TERM" in
+	    (vt100|ansi) ;;
+	    (OFF*) xtitlebar "###  -- ROOT  (since $(date +'%a %T')) --  ###" ;;
+	    (*) ;;
+	esac
+
+	# Auto logout after a reasonable period (in seconds) if root.
+	#TMOUT=7200
+    else
+	# Depends on the DEBUG trap being set up to run dirprompt().
+	export PS1='$HOSTNAME:$_dirprompt $? !# '
+	trap 'dirprompt -l 2' DEBUG 2>&-
+    fi
+
+    # Turn the prompt bold. Some dumb old telnet apps, e.g. Windows
+    # NT4, don't handle xterm-style escapes; assume they'll look like
+    # straight vt100 or ansi terminals and that any _good_ telnet can
+    # be set to vt102 or above if people want this feature. Yuck.
+    case "$TERM" in
+	(vt100|ansi) ;;
+	(xterm*|dtterm*|sun-*|vt*|vs*|ansi*) PS1="$HOSTNAME:[1m$PS1[m" ;;
+    esac
+else
+    # In normal mode, set the prompt string to use 3 levels of dirs
+    # plus exit status of previous cmd and event number.
+    if [[ -n "$BASH_VERSION" ]]; then
+	export PS1='$(dirprompt -s -l 3 -P $HOSTNAME: -S " $?" -p) \#% '
+    else
+	# Depends on the DEBUG trap being set up to run dirprompt().
+	export PS1='$_dirprompt $? !% '
+	trap 'dirprompt -s -l 3 -P $HOSTNAME:' DEBUG 2>&-
+    fi
+fi
+
+PS4='${0##*/} $? $LINENO: '
+
+# Don't leave any namespace debris around.
+unset _root _sued
+
+: Keep this - it ensures a zero return status

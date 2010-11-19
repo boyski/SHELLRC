@@ -1,0 +1,2 @@
+SHELLRC=${SHELLRC:-/home/.SHELLRC}; export SHELLRC
+. ${SHELLRC?}/PerShell

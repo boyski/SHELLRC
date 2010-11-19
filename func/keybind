@@ -1,0 +1,16 @@
+# Set up the tab key for filename completion.
+typeset -A KEYTABLE
+trap 'eval "${KEYTABLE[${.sh.edchar}]}"' KEYBD
+function keybind # key [action]
+{
+   typeset key=$(print -f %q "$2")
+   case $# in
+      2)    KEYTABLE[$1]='.sh.edchar=${.sh.edmode}'"$key" ;;
+      1)    unset KEYTABLE[$1] ;;
+      *)    print -u2 "Usage: $0 key [action]"
+	    return 2 ;;
+   esac
+}
+
+# This cmd would cause the TAB key to do filename completion.
+# keybind $'\t' $'\\' # any TAB key hit becomes ESC-backslash

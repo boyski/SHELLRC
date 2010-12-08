@@ -1,0 +1,10 @@
+#!/bin/bash
+
+PWD=`/bin/pwd`
+for i in .dsb.*; do
+    target=`echo $i | sed 's%^.dsb%%'`
+    if [ -f "$HOME/$target" ]; then
+	mv $HOME/$target $HOME/$target.$$
+    fi
+    ln -s $PWD/$i $HOME/$target
+done

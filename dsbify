@@ -1,10 +1,13 @@
 #!/bin/bash
 
-PWD=`/bin/pwd`
-for i in .dsb.*; do
-    target=`echo $i | sed 's%^.dsb%%'`
-    if [ -f "$HOME/$target" ]; then
-	mv $HOME/$target $HOME/$target.$$
-    fi
-    ln -s $PWD/$i $HOME/$target
+set -e
+SHELLRC=`/bin/pwd`
+for tgt in .bashrc .kshrc; do
+    [ ! -f $HOME/$tgt ] || mv $HOME/$tgt $HOME/$tgt.ORIG
+    ln -s $SHELLRC/.PerShell $HOME/$tgt
+done
+for dsb in .dsb.*; do
+    tgt=`echo $dsb | sed 's%^.dsb%%'`
+    [ ! -f "$HOME/$tgt" ] || mv $HOME/$tgt $HOME/$tgt.ORIG
+    ln -s $SHELLRC/$dsb $HOME/$tgt
 done

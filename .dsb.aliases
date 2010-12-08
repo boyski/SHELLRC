@@ -1,0 +1,36 @@
+alias +x='chmod a+x'
+alias c=cleartool
+alias lsco='cleartool lsco -all'
+alias ctci='ct ci -ptime'
+alias G='gdb --quiet --args'
+alias C=clear
+alias pmi='make pure_all install'
+alias vf=cd
+
+# Because I HATE 'ls --color' on Linux.
+unset LS_COLORS
+unalias ls 2>/dev/null
+
+function mkelems {
+    ct mkelem -ci -nc -ptime -ok "${@:--dir}" && ct setcs -curr
+}
+
+function rgrep {
+    if [[ -x /bin/sun ]]; then
+	find . \( -name .snapshot -prune \) -o -type f -exec egrep "$@" {} +
+    else
+	find . \( -name .snapshot -prune \) -o -type f -exec egrep "$@" {} \;
+    fi
+}
+
+if [[ -x /bin/sun ]]; then
+    # Top is deprecated
+    alias top=prstat
+
+    # Strips page headers
+    alias man='man -T /usr/share/lib/tmac/ansun'
+fi
+
+# Saves stdout and stderr in files as well as dumping them to
+# the terminal and preserving order.
+# { command >&1 >&3 3>&- | tee err; } 3>&1 | tee out

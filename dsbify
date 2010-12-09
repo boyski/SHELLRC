@@ -3,11 +3,13 @@
 set -e
 SHELLRC=`/bin/pwd`
 for tgt in .bashrc .kshrc; do
-    [ ! -f $HOME/$tgt ] || mv $HOME/$tgt $HOME/$tgt.ORIG
+    [ ! -h $HOME/$tgt ] || rm -f $HOME/$tgt
+    [ ! -e $HOME/$tgt ] || mv $HOME/$tgt $HOME/$tgt.ORIG
     ln -s $SHELLRC/.PerShell $HOME/$tgt
 done
 for dsb in .dsb.*; do
     tgt=`echo $dsb | sed 's%^.dsb%%'`
-    [ ! -f "$HOME/$tgt" ] || mv $HOME/$tgt $HOME/$tgt.ORIG
+    [ ! -h $HOME/$tgt ] || rm -f $HOME/$tgt
+    [ ! -e "$HOME/$tgt" ] || mv $HOME/$tgt $HOME/$tgt.ORIG
     ln -s $SHELLRC/$dsb $HOME/$tgt
 done

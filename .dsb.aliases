@@ -1,4 +1,3 @@
-alias +x='chmod a+x'
 alias c=cleartool
 alias lsco='cleartool lsco -all'
 alias ctci='ct ci -ptime'
@@ -6,6 +5,7 @@ alias G='gdb --quiet --args'
 alias C=clear
 alias pmi='make pure_all install'
 alias vf=cd
+[[ -z "$BASH_VERSION" ]] || alias +x='chmod a+x'
 
 # Because I HATE 'ls --color' on Linux.
 unset LS_COLORS

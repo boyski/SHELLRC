@@ -1,4 +1,4 @@
-# Some systems don't support "uname -p" and thus require a hack.
+# Some systems don't support "uname -p" and thus require a special case.
 
 if [[ -a /proc/cpuinfo ]]; then
     case `uname -m` in

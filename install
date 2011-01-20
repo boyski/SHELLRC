@@ -4,12 +4,12 @@ set -e
 SHELLRC=`/bin/pwd`
 for tgt in .bashrc .kshrc; do
     [ ! -h $HOME/$tgt ] || rm -f $HOME/$tgt
-    [ ! -e $HOME/$tgt ] || mv $HOME/$tgt $HOME/$tgt.ORIG
-    ln -s $SHELLRC/.PerShell $HOME/$tgt
+    [ ! -e $HOME/$tgt ] || (set -x; mv $HOME/$tgt $HOME/$tgt.ORIG)
+    (set -x; ln -s $SHELLRC/.PerShell $HOME/$tgt)
 done
 for dsb in .dsb.*; do
     tgt=`echo $dsb | sed 's%^.dsb%%'`
     [ ! -h $HOME/$tgt ] || rm -f $HOME/$tgt
-    [ ! -e "$HOME/$tgt" ] || mv $HOME/$tgt $HOME/$tgt.ORIG
-    ln -s $SHELLRC/$dsb $HOME/$tgt
+    [ ! -e "$HOME/$tgt" ] || (set -x; mv $HOME/$tgt $HOME/$tgt.ORIG)
+    (set -x; ln -s $SHELLRC/$dsb $HOME/$tgt)
 done

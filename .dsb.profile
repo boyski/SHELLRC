@@ -15,6 +15,8 @@ export CLEARCASE_MAKE_COMPAT=gnu
 
 export PERLDB_OPTS="warnLevel=0"
 
+export AODEVELOPER=1
+
 # For help in testing SW, prints file:line in putil error msgs.
 export PUTIL_SRCDBG=1
 

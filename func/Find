@@ -1,0 +1,9 @@
+#!shell (just so 'file' says the right thing)
+
+# Safe find - ignore directories which logically should not be there.
+function Find
+{
+    typeset dir=$1; shift
+    [[ $# > 0 ]] || set -- -print
+    find "$dir" \( \( -name .svn -o -name .CVS\* -o -name .git -o -name .snapshot \) -prune \) -o "$@"
+}

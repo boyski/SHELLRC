@@ -5,5 +5,5 @@ function Find
 {
     typeset dir=$1; shift
     [[ $# > 0 ]] || set -- -print
-    find "$dir" \( \( -name .svn -o -name .CVS\* -o -name .git -o -name .snapshot \) -prune \) -o "$@"
+    find "$dir" \( \( -name .svn -o -name .CVS\* -o -name .git\* -o -name .snapshot \) -prune \) -o "$@"
 }

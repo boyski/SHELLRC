@@ -15,14 +15,6 @@ function mkelems {
     ct mkelem -ci -nc -ptime -ok "${@:--dir}" && ct setcs -curr
 }
 
-function rgrep {
-    if [[ -x /bin/sun ]]; then
-	find . \( -name .snapshot -prune \) -o -type f -exec egrep "$@" {} +
-    else
-	find . \( -name .snapshot -prune \) -o -type f -exec egrep "$@" {} \;
-    fi
-}
-
 if [[ -x /bin/sun ]]; then
     # Top is deprecated
     alias top=prstat

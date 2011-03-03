@@ -1,0 +1,7 @@
+function rgrep {
+    if [[ -x /bin/sun ]]; then
+	Find . -type f -exec egrep "$@" {} +
+    else
+	Find . -type f -exec egrep "$@" {} /dev/null \;
+    fi
+}

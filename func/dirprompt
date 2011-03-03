@@ -136,4 +136,6 @@ function dirprompt
     fi
 
     unset _flag _pwd _num _stdout _prefix _suffix _xwd
+
+    return 0
 }

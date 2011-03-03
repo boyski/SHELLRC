@@ -16,6 +16,7 @@ Release/
 *.pch
 *.pdb
 *.sbr
+*.sln.cache
 
 # Make-dependency data
 *.d

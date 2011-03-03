@@ -31,7 +31,7 @@ if [[ -n "$BASH_VERSION" ]]; then
     . $SHELLRC/func/rgrep
 fi
 
-# The inability to write ~ is taken as an indicator of whether we've su-ed.
+# The inability to write to ~ is an indicator of whether we've su-ed.
 # This assumes that ~ is NFS-mounted (in the case of root). Also
 # check path, which may assume SVR4/Solaris.
 [[ -w ~ && "$PATH" != "/usr/sbin:/usr/bin" ]] || typeset _sued=1

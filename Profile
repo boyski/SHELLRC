@@ -75,10 +75,10 @@ if [ -d /opt/local ]; then
 fi
 
 # Also give xpg4 bin etc. precedence over /usr/bin.
-onpath PATH -F/usr/bin /usr/dt/bin /usr/xpg4/bin
+#onpath PATH -F/usr/bin /usr/dt/bin /usr/xpg4/bin
 
 # We may need some of these utilities (make, ar) but put them late.
-onpath PATH -B /usr/ccs/bin /usr/sbin /sbin
+onpath PATH -B /usr/sbin /sbin
 
 # Stick these on the front for personal tools ...
 onpath PATH -F ~/$CPU/bin ~/bin

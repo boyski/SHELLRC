@@ -3,6 +3,8 @@
 # Do not modify PATH here - do so only in ~/.profile!!!
 #########################################################################
 
+SHELLRC=${SHELLRC:-$HOME/SHELLRC}; export SHELLRC
+
 # Prevent shell from accessing HISTFILE until we're ready.
 unset HISTFILE ||:
 set -o nolog
@@ -25,6 +27,8 @@ if [[ -n "$BASH_VERSION" ]]; then
     . $SHELLRC/func/dirfuncs.sh
     . $SHELLRC/func/xtitlebar
     . $SHELLRC/func/dirprompt
+    . $SHELLRC/func/Find
+    . $SHELLRC/func/rgrep
 fi
 
 # The inability to write ~ is taken as an indicator of whether we've su-ed.
@@ -125,7 +129,7 @@ elif [[ -n "$_sued" || -n "$_root" ]]; then
 	# See comment below for vt100 hack.
 	case "$TERM" in
 	    (vt100|ansi) ;;
-	    (OFF*) xtitlebar "###  -- ROOT  (since $(date +'%a %T')) --  ###" ;;
+	    #(OFF*) xtitlebar "###  -- ROOT  (since $(date +'%a %T')) --  ###" ;;
 	    (*) ;;
 	esac
 

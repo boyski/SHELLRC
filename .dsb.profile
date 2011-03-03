@@ -1,22 +1,20 @@
-## export VISUAL=emacs
+if [[ -f /tools/bin/common.profile ]]; then
+    . /tools/bin/common.profile
+fi
+
+# Bash doesn't do this by default for login shells.
+. ~/.bashrc
+
+# Setup Terminal
+#stty erase "^H" kill "^U" intr "^C" eof "^D" susp "^Z" 
+#stty hupcl ixon ixoff tostop tabs	
+
 # Apparently some platforms (SuSE Linux) set this to 'emacs' by default.
 unset VISUAL
 
 # The generic profile file.
-SHELLRC=${SHELLRC:-/home/.SHELLRC}; export SHELLRC
+SHELLRC=${SHELLRC:-$HOME/SHELLRC}; export SHELLRC
 . ${SHELLRC?}/Profile
-
-#onpath PERL5LIB ~/lib/perl5 ~/lib/perl5/site_perl
-if [ -d /opt/local/perl5 ]; then
-    onpath PERL5LIB /opt/local/perl5/lib/site_perl
-fi
-
-export CLEARCASE_MAKE_COMPAT=gnu
-
-export PERLDB_OPTS="warnLevel=0"
-
-# For help in testing SW, prints file:line in putil error msgs.
-export PUTIL_SRCDBG=1
 
 if [[ -x /usr/bin/sun ]]; then
     ##### SOLARIS
@@ -50,34 +48,27 @@ elif [[ -d /cores ]]; then
     ulimit -c unlimited
 fi
 
-onpath -B /opt/ant/bin
+#onpath -B /opt/ant/bin
 
 # CSW stuff tends to be newer than bundled SFW.
-pkguse -Q -B /opt/csw /opt/sfw
+#pkguse -Q -B /opt/csw /opt/sfw
 
 # Some platforms use one of these variants for gcc:
-pkguse -Q /opt/csw/gcc3
-pkguse -Q /opt/csw/gcc4
-pkguse -Q /opt/gcc3
-pkguse -Q /opt/dynbin
+#pkguse -Q /opt/csw/gcc3
+#pkguse -Q /opt/csw/gcc4
+#pkguse -Q /opt/gcc3
+#pkguse -Q /opt/dynbin
 
-pkguse -Q /opt/SUNWspro
+#pkguse -Q /opt/SUNWspro
 
 onpath MANPATH -B ~/$CPU/man
 
 set +o noglob
 
 if [ -n "$DISPLAY" ]; then
-    xtitlebar "$HOSTNAME $$"
+    : xtitlebar "$HOSTNAME $$"
 fi
 
-# Save-typing-hack - this should only be true in a NCA environment.
-if [ -z 1 -a ! -d /opt/rational/clearcase ]; then
-    for i in /vobs_ao/client/src/ /view/*/vobs_ao/client/src; do
-	if [ -d "$i" ]; then
-	    cd "$i"
-	    break
-	fi
-    done
-    :
-fi
+## Broadcom stuff
+
+onpath ~/$CPU/bin ~/bin /projects/hnd/tools/linux-$(uname -r)/bin /projects/hnd/tools/linux/hndtools-mipsel-uclibc/bin /projects/hnd/tools/linux/hndtools-mipsel-linux/bin /projects/hnd/tools/linux/bin /projects/hnd/tools/precommit/bin /tools/bin /usr/local/bin

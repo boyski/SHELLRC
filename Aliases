@@ -15,6 +15,10 @@ alias printenv=/usr/ucb/printenv
 alias rs='eval $(/usr/openwin/bin/resize)'
 alias source=.
 
+if [[ -n "$BASH_VERSION" ]]; then
+    alias rehash='hash -r'
+fi
+
 ########################### For old csh users ##########################
 
 alias !!=r

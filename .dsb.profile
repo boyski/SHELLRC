@@ -39,9 +39,7 @@ elif [[ -e /proc/cpuinfo ]]; then
     # GNU ls has an irritating difference in -l format without this.
     export LC_TIME=C
     #[[ "$TERM" != "xterm" ]] || TERM=xterm-r6
-    if [[ "$TERM" = "xterm" ]]; then
-	export TERMINFO=~/.terminfo TERM=xterm-r6
-    fi
+    [[ "$TERM" != "xterm" ]] || export TERMINFO=~/.terminfo TERM=xterm-r6
     if [[ -e /opt/java ]]; then
 	export JAVA_HOME=/opt/java
 	onpath $JAVA_HOME/bin
@@ -54,7 +52,7 @@ fi
 
 onpath -B /opt/ant/bin
 
-# CSW stuff tends to be newer than bundled SFW.
+# On Solaris, CSW stuff tends to be newer than bundled SFW.
 pkguse -Q -B /opt/csw /opt/sfw
 
 # Some platforms use one of these variants for gcc:
@@ -69,17 +67,4 @@ onpath MANPATH -B ~/$CPU/man
 
 set +o noglob
 
-if [ -n "$DISPLAY" ]; then
-    xtitlebar "$HOSTNAME $$"
-fi
-
-# Save-typing-hack - this should only be true in a NCA environment.
-if [ -z 1 -a ! -d /opt/rational/clearcase ]; then
-    for i in /vobs_ao/client/src/ /view/*/vobs_ao/client/src; do
-	if [ -d "$i" ]; then
-	    cd "$i"
-	    break
-	fi
-    done
-    :
-fi
+[[ -z "$DISPLAY" ]] || xtitlebar "$HOSTNAME $$"

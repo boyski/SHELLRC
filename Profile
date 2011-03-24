@@ -70,7 +70,7 @@ unset _prof
 # Make sure site-specific bin dirs precede /usr/bin. Also, /opt/local
 # is preferred to /usr/local.
 if [ -d /opt/local ]; then
-    onpath PATH -F/usr/bin /opt/local/bin
+    onpath PATH -F/bin /opt/local/bin
     onpath MANPATH /opt/local/man
 fi
 

@@ -30,8 +30,9 @@ if [[ -x /usr/bin/sun ]]; then
     pkguse -Q $JAVA_HOME
 elif [[ -e /proc/cpuinfo ]]; then
     ##### LINUX
-    # Apparently needed on Linux due to differing defaults (boo).
-    ulimit -c 32768
+    # Apparently _was_ needed on Linux due to differing defaults
+    # but no longer required or allowed with newer bash versions.
+    #ulimit -c 32768
     # GNU ls has an irritating difference in -l format without this.
     export LC_TIME=C
     #[[ "$TERM" != "xterm" ]] || TERM=xterm-r6
@@ -50,6 +51,9 @@ fi
 
 # On Solaris, CSW stuff tends to be newer than bundled SFW.
 #pkguse -Q -B /opt/csw /opt/sfw
+
+# Xcode stuff seems to be here on Mac OS X.
+pkguse -Q /Developer/usr
 
 # Some platforms use one of these variants for gcc:
 #pkguse -Q /opt/csw/gcc3

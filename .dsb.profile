@@ -1,5 +1,5 @@
-if [[ -f /tools/bin/common.profile ]]; then
-    . /tools/bin/common.profile
+if [[ -f $HOME/.common.profile ]]; then
+    . $HOME/.common.profile
 fi
 
 # Bash doesn't do this by default for login shells.
@@ -73,4 +73,5 @@ export PREMAKE_PATH=$HOME/src/premake-4.3/src
 
 ## Broadcom stuff
 
-onpath ~/$CPU/bin ~/bin /projects/hnd/tools/linux-$(uname -r)/bin /projects/hnd/tools/linux/hndtools-mipsel-uclibc/bin /projects/hnd/tools/linux/hndtools-mipsel-linux/bin /projects/hnd/tools/linux/bin /projects/hnd/tools/precommit/bin /tools/bin /usr/local/bin
+onpath ~/$CPU/bin ~/bin /projects/hnd/tools/linux-$(uname -r)/bin /projects/hnd/tools/linux/hndtools-mipsel-uclibc/bin /projects/hnd/tools/linux/hndtools-mipsel-linux/bin /projects/hnd/tools/linux/bin /projects/hnd/tools/precommit/bin /usr/local/bin
+onpath -B /tools/bin

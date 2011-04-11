@@ -4,6 +4,9 @@
 function Find
 {
     typeset dir=$1; shift
-    [[ $# > 0 ]] || set -- -print
+    case "$@" in
+	*-print*|*-exec*|*-ok*|*-ls*|*-fls*|*-delete*|*-fprint*|*-prune*|*-quit*) ;;
+	*) set -- "$@" -print
+    esac
     find "$dir" \( \( -name .svn -o -name .CVS\* -o -name .git\* -o -name .snapshot \) -prune \) -o "$@"
 }

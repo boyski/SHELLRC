@@ -72,3 +72,5 @@ onpath MANPATH -B ~/$CPU/man
 set +o noglob
 
 [[ -z "$DISPLAY" ]] || xtitlebar "$HOSTNAME $$"
+
+export PREMAKE_PATH=$HOME/src/premake-4.3/src

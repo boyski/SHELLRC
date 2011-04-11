@@ -70,8 +70,3 @@ set +o noglob
 [[ -z "$DISPLAY" ]] || xtitlebar "$HOSTNAME $$"
 
 export PREMAKE_PATH=$HOME/src/premake-4.3/src
-
-## Broadcom stuff
-
-onpath ~/$CPU/bin ~/bin /projects/hnd/tools/linux-$(uname -r)/bin /projects/hnd/tools/linux/hndtools-mipsel-uclibc/bin /projects/hnd/tools/linux/hndtools-mipsel-linux/bin /projects/hnd/tools/linux/bin /projects/hnd/tools/precommit/bin /usr/local/bin
-onpath -B /tools/bin

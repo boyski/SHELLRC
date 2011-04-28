@@ -18,6 +18,7 @@ SHELLRC=${SHELLRC:-$HOME/SHELLRC}; export SHELLRC
 
 if [[ -x /usr/bin/sun ]]; then
     ##### SOLARIS
+    pkguse -Q -B /usr/ccs
     pkguse -Q -B /opt/samba
     pkguse -Q /opt/perl-5.8.0-gcc
     #onpath -F/usr/xpg4/bin /opt/local/bin

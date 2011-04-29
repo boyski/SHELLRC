@@ -14,12 +14,6 @@ set -o nolog
 # the full environment.
 [[ -n "$SHELLRC" ]] || . ~/.profile
 
-# Stop reading this file now unless we're in an interactive shell.
-# This may be redundant with the ENV=EnvFile setup but no harm done.
-[[ "$-" = *i* ]] || return 0
-
-# Note: everything from here down is seen only by interactive shells.
-
 # Sadly, bash does not support FPATH so we need to preload functions.
 if [[ -n "$BASH_VERSION" ]]; then
     . $SHELLRC/func/whence.bash
@@ -27,9 +21,11 @@ if [[ -n "$BASH_VERSION" ]]; then
     . $SHELLRC/func/dirfuncs.sh
     . $SHELLRC/func/xtitlebar
     . $SHELLRC/func/dirprompt
-    . $SHELLRC/func/Find
-    . $SHELLRC/func/rgrep
 fi
+
+# Stop reading this file now unless we're in an interactive shell.
+# This may be redundant with the ENV=EnvFile setup but no harm done.
+[[ "$-" = *i* ]] || return 0
 
 # The inability to write to ~ is an indicator of whether we've su-ed.
 # This assumes that ~ is NFS-mounted (in the case of root). Also

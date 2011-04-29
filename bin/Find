@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Script which looks like "find" but ignores certain dirs that
+# shouldn't normally be traversed.
+
+dir=$1; shift
+case "$@" in 
+    *-print* | *-exec* | *-ok* | *-ls* | *-fls* | *-delete* | *-fprint* | *-prune* | *-quit*) ;;
+    *) set -- "$@" -print ;;
+esac
+
+exec find "$dir" \( \( -name .svn -o -name .CVS\* -o -name .git\* -o -name .snapshot \) -prune \) -o "$@"

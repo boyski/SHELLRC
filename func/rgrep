@@ -1,7 +1,0 @@
-function rgrep {
-    if [[ -x /bin/sun ]]; then
-	Find . -type f -exec egrep "$@" {} +
-    else
-	egrep --exclude='*\.snapshot*' --exclude='*\.git*' --exclude='*\.CVS*' --exclude='*\.svn*' -I -r "$@" .
-    fi
-}

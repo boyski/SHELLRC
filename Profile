@@ -91,7 +91,7 @@ offpath PATH /usr/ucb /etc /usr/local/bin .
 cleanpath PATH MANPATH FPATH
 
 # Keep a record of who's using this env and when they last logged in.
-> $SHELLRC/users/${LOGNAME:-${USER:-$(logname)}}
+# > $SHELLRC/users/${LOGNAME:-${USER:-$(logname)}}
 
 # Now allow interactively-defined functions to go into the history file.
 set +o nolog

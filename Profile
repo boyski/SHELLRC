@@ -81,7 +81,7 @@ fi
 onpath PATH -B /usr/sbin /sbin
 
 # Stick these on the front for personal tools ...
-onpath PATH -F ~/$CPU/bin ~/bin
+onpath PATH -F ~/$CPU/bin ~/bin $SHELLRC/bin
 
 # 1. Get rid of old backward-compatibility hacks (/usr/ucb, /etc).
 # 2. Get "." out of path for safety in heterogeneous environments.

@@ -18,6 +18,7 @@ SHELLRC=${SHELLRC:-$HOME/SHELLRC}; export SHELLRC
 
 if [[ -x /usr/bin/sun ]]; then
     ##### SOLARIS
+    pkguse -Q -B /usr/ccs
     pkguse -Q -B /opt/samba
     pkguse -Q /opt/perl-5.8.0-gcc
     #onpath -F/usr/xpg4/bin /opt/local/bin
@@ -50,14 +51,14 @@ fi
 #onpath -B /opt/ant/bin
 
 # On Solaris, CSW stuff tends to be newer than bundled SFW.
-#pkguse -Q -B /opt/csw /opt/sfw
+pkguse -Q -B /opt/csw /opt/sfw
 
 # Xcode stuff seems to be here on Mac OS X.
 pkguse -Q /Developer/usr
 
 # Some platforms use one of these variants for gcc:
 #pkguse -Q /opt/csw/gcc3
-#pkguse -Q /opt/csw/gcc4
+pkguse -Q /opt/csw/gcc4
 #pkguse -Q /opt/gcc3
 #pkguse -Q /opt/dynbin
 

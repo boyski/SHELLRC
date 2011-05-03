@@ -8,5 +8,5 @@ if [[ -f /proc/version ]]; then
     egrep --exclude='*\.snapshot*' --exclude='*\.git*' --exclude='*\.CVS*' --exclude='*\.svn*' -I -r "$@" .
 else
     # Fallback
-    Find . -type f -exec egrep "$@" {} +
+    ffind . -type f -exec egrep "$@" {} +
 fi

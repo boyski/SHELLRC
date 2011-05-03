@@ -3,10 +3,13 @@
 # Script which looks like "find" but ignores certain dirs that
 # shouldn't normally be traversed.
 
-dir=$1; shift
+while [[ "$1" != -* ]]; do
+    dirs="$dirs $1"; shift
+done
+
 case "$@" in 
     *-print* | *-exec* | *-ok* | *-ls* | *-fls* | *-delete* | *-fprint* | *-prune* | *-quit*) ;;
     *) set -- "$@" -print ;;
 esac
 
-exec find "$dir" \( \( -name .svn -o -name .CVS\* -o -name .git\* -o -name .snapshot \) -prune \) -o "$@"
+exec find $dirs \( \( -name .svn -o -name .CVS\* -o -name .git\* -o -name .snapshot \) -prune \) -o "$@"

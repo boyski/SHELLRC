@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Recursive variant of grep which ignores certain dirs that
 # shouldn't normally be traversed.

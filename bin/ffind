@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Script which looks like "find" but ignores certain dirs that
 # shouldn't normally be traversed.

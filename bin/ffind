@@ -3,7 +3,7 @@
 # Script which looks like "find" but ignores certain dirs that
 # shouldn't normally be traversed.
 
-while [[ "$1" != -* ]]; do
+while [[ -n "$1" && "$1" != -* ]]; do
     dirs="$dirs $1"; shift
 done
 

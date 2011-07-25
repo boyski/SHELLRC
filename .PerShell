@@ -1,2 +1,6 @@
 SHELLRC=${SHELLRC:-$HOME/SHELLRC}; export SHELLRC
 . ${SHELLRC?}/PerShell
+
+if [[ -r $HOME/.PerShell.local ]]; then
+    . $HOME/.PerShell.local
+fi

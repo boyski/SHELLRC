@@ -74,3 +74,7 @@ set +o noglob
 # Android/Chromium hacking
 [[ ! -d ~/depot_tools ]] || onpath -B ~/depot_tools
 #export DEPOT_TOOLS_UPDATE=0
+
+if [[ -r $HOME/.profile.local ]]; then
+    . $HOME/.profile.local
+fi

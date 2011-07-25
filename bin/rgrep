@@ -5,8 +5,8 @@
 
 if [[ -f /proc/version ]]; then
     # Linux, assume GNU grep
-    egrep --exclude='*\.snapshot*' --exclude='*\.git*' --exclude='*\.CVS*' --exclude='*\.svn*' -I -r "$@" .
+    grep --exclude='*\.snapshot*' --exclude='*\.git*' --exclude='*\.CVS*' --exclude='*\.svn*' -I -r "$@" .
 else
     # Fallback
-    ffind . -type f -exec egrep "$@" {} +
+    ffind . -type f -exec grep "$@" {} +
 fi

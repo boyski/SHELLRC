@@ -17,6 +17,9 @@ Release/
 *.pdb
 *.sbr
 *.sln.cache
+*.ncb
+*.suo
+*.user
 
 # Make-dependency data
 *.d
@@ -60,6 +63,8 @@ Thumbs.db
 *.keep
 ?*.ao
 MF*
+
+blib/
 
 # Competing SCM tools #
 ######################

@@ -46,6 +46,7 @@ elif [[ -e /proc/cpuinfo ]]; then
 elif [[ -d /cores ]]; then
     ##### MAC OS X
     ulimit -c unlimited
+    ulimit -S -n 1024
 fi
 
 #onpath -B /opt/ant/bin
@@ -70,4 +71,6 @@ set +o noglob
 
 [[ -z "$DISPLAY" ]] || xtitlebar "$HOSTNAME $$"
 
-export PREMAKE_PATH=$HOME/src/premake-4.3/src
+# Android/Chromium hacking
+[[ ! -d ~/depot_tools ]] || onpath -B ~/depot_tools
+#export DEPOT_TOOLS_UPDATE=0

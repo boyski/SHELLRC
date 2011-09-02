@@ -22,3 +22,6 @@
 #	external = meld4git
 [diff]
 	tool = vimdiff
+[github]
+	user = boyski
+	token = 63d8196b06594cabae6539f900a3ffdf

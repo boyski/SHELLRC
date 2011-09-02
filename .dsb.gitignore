@@ -71,6 +71,8 @@ blib/
 CVS/
 .svn/
 
+*.pyc
+
 *.BACKUP.[0-9]*
 *.BASE.[0-9]*
 *.LOCAL.[0-9]*

@@ -3,6 +3,7 @@
 	name = David Boyce
 [core]
 	excludesfile = /home/dsb/.gitignore
+	pager = less +'/^---'
 [alias]
 	co = checkout
 	cp = commit -a -m CHECKPOINT

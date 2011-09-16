@@ -5,8 +5,8 @@
 
 if [[ -f /proc/versionTODO ]]; then
     # Linux, assume GNU grep
-    grep --exclude='*\.snapshot*' --exclude='*\.git*' --exclude='*\.CVS*' --exclude='*\.svn*' -I -r "$@" .
+    grep -E -I -r --exclude-dir='*\.snapshot*' --exclude-dir='*\.git*' --exclude-dir='*\.CVS*' --exclude-dir='*\.svn*' -I -r "$@" .
 else
     # Fallback
-    ffind . -type f -exec grep "$@" {} +
+    ffind . -type f -exec egrep "$@" {} +
 fi

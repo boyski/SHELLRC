@@ -2,13 +2,15 @@
 
 if [[ -a /proc/cpuinfo ]]; then
     case `uname -s`===`uname -m` in
-	CYGWIN*===*64*)	export CPU=Cygwin_x86_64 ;;
-	CYGWIN*)	export CPU=Cygwin_i386 ;;
-	Linux*===*64*)	export CPU=Linux_x86_64 ;;
-	Linux*)		export CPU=Linux_i386 ;;
+	CYGWIN*===*64*)	export OS_CPU=Cygwin_x86_64 ;;
+	CYGWIN*)	export OS_CPU=Cygwin_i386 ;;
+	Linux*===*64*)	export OS_CPU=Linux_x86_64 ;;
+	Linux*)		export OS_CPU=Linux_i386 ;;
     esac
 elif [[ -a /bin/hp-pa ]] && /bin/hp-pa; then
-    export CPU=`uname -s`_pa
+    export OS_CPU=`uname -s`_pa
 else
-    export CPU=`uname -s`_`uname -p`
+    export OS_CPU=`uname -s`_`uname -p`
 fi
+# TODO - remove this when OS_CPU is stable
+export CPU=$OS_CPU

@@ -11,7 +11,7 @@ syntax off
 set nohlsearch
 "
 " Personal preference.
-set shell=/bin/ksh
+set shell=/bin/bash
 "
 " Avoids a screwy "feature" added in VIM 7.
 let loaded_matchparen = 1

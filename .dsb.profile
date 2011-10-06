@@ -62,10 +62,11 @@ pkguse -Q /Developer/usr
 pkguse -Q /opt/csw/gcc4
 #pkguse -Q /opt/gcc3
 #pkguse -Q /opt/dynbin
+pkguse -Q /opt/local/cmake
 
 #pkguse -Q /opt/SUNWspro
 
-onpath MANPATH -B ~/$CPU/man
+onpath MANPATH -B ~/$OS_CPU/man
 
 set +o noglob
 

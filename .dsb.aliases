@@ -6,7 +6,7 @@ alias C=clear
 alias pmi='make pure_all install'
 alias vf=cd
 [[ -z "$BASH_VERSION" ]] || alias +x='chmod a+x'
-[[ "$CPU" != Darwin_* ]] || alias ldd='otool -L'
+[[ "$OS_CPU" != Darwin_* ]] || alias ldd='otool -L'
 
 # Because I HATE 'ls --color' on Linux.
 unset LS_COLORS

@@ -35,6 +35,7 @@ bind K kill
 bind I login on
 bind O login off
 bind } history
+bind ' ' windowlist -b 
 
 # ------------------------------------------------------------------------------
 # TERMINAL SETTINGS
@@ -55,6 +56,11 @@ termcapinfo xterm*|linux*|rxvt*|Eterm* OP
 # (This fixes the "Aborted because of window size change" konsole symptoms found
 #  in bug #134198)
 termcapinfo xterm 'is=\E[r\E[m\E[2J\E[H\E[?7h\E[?1;4;6l'
+
+# Someone else's stuff
+#caption string "%?%F%{= Bk}%? %C%A %D %d-%m-%Y %{= kB} %t%= %?%F%{= Bk}%:%{= wk}%? %n "
+#hardstatus alwayslastline
+#hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B} %d/%m %{W}%c %{g}]'
 
 # Enable non-blocking mode to better cope with flaky ssh connections.
 defnonblock 5

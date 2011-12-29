@@ -149,7 +149,7 @@ else
     # In normal mode, set the prompt string to use 3 levels of dirs
     # plus exit status of previous cmd and event number.
     if [[ -n "$BASH_VERSION" ]]; then
-	export PS1='$(dirprompt -s -l 3 -P $HOSTNAME: -S " $?" -p) \#% '
+	export PS1='$(dirprompt -s -l 3 -P $HOSTNAME: -S " $?" -p -t "  \h  ${PWD/$w/...}") \#% '
     else
 	# Depends on the DEBUG trap being set up to run dirprompt().
 	export PS1='$_dirprompt $? !% '

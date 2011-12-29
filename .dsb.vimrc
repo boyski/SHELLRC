@@ -7,6 +7,8 @@
 " Typically reasonable/standard vi settings.
 set ai redraw sm aw sw=4 tabstop=8 report=1
 "
+" set expandtab
+"
 syntax off
 set nohlsearch
 "

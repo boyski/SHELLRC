@@ -1,35 +1,31 @@
 escape		^Lb
-startup_message	off
+defscrollback	16384
 defutf8     	on
+startup_message	off
 vbell		off
-vbell_msg	"   whatever..."
-defscrollback	10240
-activity	"activity in %n (%t)"
-bell_msg	"bell in %n (%t)"
 
 termcapinfo	xterm*|rxvt*|kterm*|Eterm* 'hs:ts=\E]0;:fs=\007:ds=\E]0;\007'
-defhstatus	"screen ^E (^Et) | $USER@^EH"
-hardstatus	off
+#defhstatus	"screen ^E (^Et) | $USER@^EH"
+#hardstatus	off
 
-bind ' '	windowlist -b
 bind ^r		source "${HOME}/.screenrc"
-#bind ^e		escape ^Xx
-#bind ^y		escape ^Aa
-bind ^x		lockscreen
-bind o		copy
-bind p		paste .
 bind .		number
 bind l		lastmsg
 bind w		windowlist -b
-bind r		resize
-bind s		select
+bind ' '	windowlist -b
+#bind s		select
+#bind o		copy
+#bind p		paste .
+#bind ^f	focus down
+#bind ^e	escape ^Xx
+#bind ^y	escape ^Aa
 #bind >		split
 #bind <		remove
-bind ^f		focus down
-bind =		resize =
-bind +		resize +5
-bind -		resize -5
-bind ~		resize max
+#bind r		resize
+#bind =		resize =
+#bind +		resize +5
+#bind -		resize -5
+#bind ~		resize max
 
 #shelltitle	"$ |sh:"
 #hardcopy_append on
@@ -45,3 +41,5 @@ bind ~		resize max
 #blankerprg nice -n 19 cmatrix -abu9
 #deflogin    	off
 #startup_message	off
+#activity	"activity in %n (%t)"
+#bell_msg	"bell in %n (%t)"

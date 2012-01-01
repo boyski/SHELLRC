@@ -1,8 +1,4 @@
 directory ~
-#directory /view/dsb_unix/vobs_ao
-
-# Debugging a problem - unknown whether this will help.
-#set environment SHELL = /usr/bin/i86/ksh93
 
 set history save on
 set history filename ~/.gdb_history

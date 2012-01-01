@@ -101,7 +101,9 @@ function dirprompt
 		# or ansi terminals and that any _good_ telnet can be set
 		# to vt102 or above. This is a major hack, unfortunately.
 		(vt100|ansi) ;;
-		(xterm*|dtterm*|sun-*|vt*|vs*|ansi*) xtitlebar "$optarg" ;;
+		(xterm*|dtterm*|sun-*|vt*|vs*|ansi*|screen.*)
+		    xtitlebar "$optarg"
+		    ;;
 	    esac
 	    ;;
 	esac

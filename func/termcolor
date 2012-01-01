@@ -1,0 +1,5 @@
+function termcolor {
+    # http://networking.ringofsaturn.com/Unix/Bash-prompts.php
+    #printf "\\e]4;$1;$2\\a"
+    echo -e "\E[41m\E[39m"
+}

@@ -1,0 +1,46 @@
+escape		^Lb
+defscrollback	8192
+defutf8     	on
+startup_message	off
+vbell		off
+
+termcapinfo	xterm*|xterm-256color|xterms|xs|rxvt ti@:te@
+termcapinfo	xterm*|rxvt*|kterm*|Eterm* 'hs:ts=\E]0;:fs=\007:ds=\E]0;\007'
+hardstatus	off
+caption		always "%?%F%{-b bc}%:%{-b bb}%?%C|%D|%M %d|%H%?%F%{+u wb}%? %L=%-Lw%45>%{+b by}%n%f*%t%{-}%+Lw%-0<"
+#defhstatus	"screen ^E (^Et) | $USER@^EH"
+
+bind ^r		source "${HOME}/.screenrc"
+bind .		number
+bind l		lastmsg
+bind w		windowlist -b
+bind ' '	windowlist -b
+#bind s		select
+#bind o		copy
+#bind p		paste .
+#bind ^f	focus down
+#bind ^e	escape ^Xx
+#bind ^y	escape ^Aa
+#bind >		split
+#bind <		remove
+#bind r		resize
+#bind =		resize =
+#bind +		resize +5
+#bind -		resize -5
+#bind ~		resize max
+
+#shelltitle	"$ |sh:"
+#hardcopy_append on
+#hardcopydir ~/.screen
+#windowlist title	" Num%+3=| Fl%+3=| Name"
+#windowlist string	" %3n%+3=| %f%+3=| %t"
+#zombie		^D^C
+#termcapinfo	vt100 dl=5\E[M
+#termcapinfo	xterm*|rxvt*|kterm*|Eterm* hs:ts=\E]0;:fs=\007:ds=\E]0;\007
+#termcapinfo	xterm*|linux*|rxvt*|Eterm* OP
+#idle 600 blanker
+#blankerprg nice -n 19 cmatrix -abu9
+#deflogin    	off
+#startup_message	off
+#activity	"activity in %n (%t)"
+#bell_msg	"bell in %n (%t)"

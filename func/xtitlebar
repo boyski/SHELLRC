@@ -10,7 +10,7 @@ function xtitlebar # [+ | - | =] title ...
 {
 	# Ignore inappropriate term types silently and without prejudice
 	case "$TERM" in
-	(sun-*|vt*|vs*|ansi*|xterm*|dtterm*|630*) ;;
+	(screen.*|sun-*|vt*|vs*|ansi*|xterm*|dtterm*|630*) ;;
 	(*) return 0 ;;
 	esac
 
@@ -73,6 +73,9 @@ function xtitlebar # [+ | - | =] title ...
 	case $TERM in
 	    (vt*|vs*|ansi*|xterm*|dtterm*)
 	       printf "%s" "]0;$x" >/dev/tty
+	       ;;
+	    (screen.*)
+	       printf "%s" "k$x\\" >/dev/tty
 	       ;;
 	    (sun-*)
 	       printf "%s" "]l$x\\" >/dev/tty

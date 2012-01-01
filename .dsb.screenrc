@@ -1,12 +1,14 @@
 escape		^Lb
-defscrollback	16384
+defscrollback	8192
 defutf8     	on
 startup_message	off
 vbell		off
 
+termcapinfo	xterm*|xterm-256color|xterms|xs|rxvt ti@:te@
 termcapinfo	xterm*|rxvt*|kterm*|Eterm* 'hs:ts=\E]0;:fs=\007:ds=\E]0;\007'
+hardstatus	off
+caption		always "%?%F%{-b bc}%:%{-b bb}%?%C|%D|%M %d|%H%?%F%{+u wb}%? %L=%-Lw%45>%{+b by}%n%f*%t%{-}%+Lw%-0<"
 #defhstatus	"screen ^E (^Et) | $USER@^EH"
-#hardstatus	off
 
 bind ^r		source "${HOME}/.screenrc"
 bind .		number
@@ -34,7 +36,6 @@ bind ' '	windowlist -b
 #windowlist string	" %3n%+3=| %f%+3=| %t"
 #zombie		^D^C
 #termcapinfo	vt100 dl=5\E[M
-#termcapinfo	xterm|xterm-256color|xterms|xs|rxvt ti@:te@
 #termcapinfo	xterm*|rxvt*|kterm*|Eterm* hs:ts=\E]0;:fs=\007:ds=\E]0;\007
 #termcapinfo	xterm*|linux*|rxvt*|Eterm* OP
 #idle 600 blanker

@@ -14,7 +14,7 @@ bind ^r		source "${HOME}/.screenrc"
 bind .		number
 bind l		lastmsg
 bind w		windowlist -b
-bind ' '	windowlist -b
+#bind ' '	windowlist -b
 #bind s		select
 #bind o		copy
 #bind p		paste .

@@ -12,4 +12,4 @@ case "$@" in
     *) set -- "$@" -print ;;
 esac
 
-exec find $dirs \( \( -name .svn -o -name .CVS\* -o -name .git\* -o -name \*.git -o -name .snapshot \) -prune \) -o "$@"
+exec find $dirs \( \( -name .svn -o -name .CVS\* -o -name .git\* -o -name \*.git -o -name .snapshot -o -name .\*.swp \) -prune \) -o "$@"

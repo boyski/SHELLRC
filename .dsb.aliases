@@ -20,6 +20,8 @@ if [[ -x /bin/sun ]]; then
 
     # Strips page headers
     alias man='man -T /usr/share/lib/tmac/ansun'
+else
+    alias ptree='pstree -l -p -a'
 fi
 
 # Saves stdout and stderr in files as well as dumping them to

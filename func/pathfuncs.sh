@@ -1,6 +1,6 @@
 #!shell (just so 'file' says the right thing)
 
-# Written by David Boyce 1995
+# Written by David Boyce ~1995 and placed in the public domain.
 
 # These functions manipulate path variables. A path variable is
 # considered to be an exported shell variable whose value is organized
@@ -8,11 +8,13 @@
 # I.e:
 #      /usr/xxx:/usr/yyy::/usr/zzz:
 # is a path value. Note that path entries are generally but not
-# necessarily directories. Also, note that path vars do not need to be
-# exported but they usually are; to keep the code simple these tools
-# assume they are to be exported. Last, because it simplifies the
-# usage, we assume all path variable names are in upper case. This
-# allows shorthand such as "onpath tmp" by disambiguating whether 'tmp'
+# necessarily directories, and even if they are conceptually
+# directories those directories are not required to exist at a given
+# time. Also, note that path vars do not need to be exported but they
+# usually are; to keep the code simple these tools assume they are
+# to be exported. Last, because it simplifies the usage, we assume
+# all path variable names are in upper case. This allows shorthand
+# such as "onpath tmp" by eliminating confusion over whether 'tmp'
 # is a pathvar or a path entry.
 
 # The offpath() function removes all instances of the specified entry(s)
@@ -29,9 +31,6 @@
 # The listpath() routine simply prints the path entries to stdout,
 # one per line. This is a convenience function. For super convenience
 # the command 'path' is aliased to 'listpath'.
-
-# The dblpath() function shows files which can be found at more than
-# on place along the path.
 
 # These functions require a modern ksh/bash/etc shell. They use only
 # features which are in the older (1988) ksh version, though the
@@ -55,7 +54,7 @@
 # specially; it just pastes the entire string to the front or back
 # as requested without caring whether it's a single entry or a
 # colon-separated list. Note: if the ~ metacharacter is used in the
-# interior of the compound entry, it may not be expanded correctly.
+# interior of a compound entry it may not be expanded correctly.
 
 ##########################################################################
 
@@ -67,7 +66,24 @@ if [[ -z "$ECHO" ]]; then
     fi
 fi
 
-# Removes all occurrences of each specified entry from <path-var>
+function _canonpath
+{
+    typeset _var _val
+    for _var in "$@"; do
+	eval _val=\$$_var
+	if [[ "$_val" != */* && "$_var" != */ ]]; then
+	    :
+	elif [[ -d "$_val" ]]; then
+	    cd "$_val" && cd "$OLDPWD" && eval $_var=$OLDPWD
+	elif [[ -f "$_val" ]]; then
+	    typeset _dir=${_val%/*} _base=${_val##*/}
+	    cd "$_dir" && cd "$OLDPWD" && eval $_var=$OLDPWD/$_base
+	fi
+    done
+}
+
+##########################################################################
+
 # We allow the -F and -B flags here for consistency but ignore them.
 function offpath
 {
@@ -76,6 +92,9 @@ function offpath
 	echo 1>&2 "Usage:    offpath [<path-var>] entry ..."
 	echo 1>&2 "Examples: offpath MANPATH $HOME/man /usr/local/gnu/man"
 	echo 1>&2 "          offpath /usr/local/bin"
+	echo
+	echo "Removes all occurrences of each specified entry from <path-var>"
+	echo "The -F and -B flags are allowed for consistency but have no effect."
 	return 1
     fi
     # Assumption: path variables start with capital letters!
@@ -124,23 +143,10 @@ function offpath
 
 ##########################################################################
 
-# Usage: onpath <path-var> -F|-B entry ...
-# For use in project env config. For each specified entry it
-# will first remove all instances of it from the specified <path-var>
-# and then add it back to either the front (-F) or back (-B).
-# Thus it always leaves exactly one instance of each entry in the
-# <path-var>. The default is -B. If an entry is attached to the
-# -F or -B flag with no intervening whitespace, e.g. -F/usr/bin,
-# indicates that you want to place the new data directly in front
-# of /usr/bin. Similarly, -B/usr/local/bin means the new entries
-# should go just after /usr/local/bin.
-# The flags -f and -b are supported for backward compatibility but
-# are deprecated because -f seems to tickle a bug in pdksh, resulting
-# in "set -f" mode.
 function onpath
 {
     typeset entry entries action pth_var pth_tmp mark missing
-    if [[ $# -lt 1 || ( "$1" = -* && "$1" != -[FfBbQq]* ) ]]; then
+    if [[ $# -lt 1 || ( "$1" = -* && "$1" != -[FBQq]* ) ]]; then
 	echo 1>&2 "Usage:    onpath <path-var> [-Q] -[FB] entry ..."
 	echo 1>&2 "          onpath <path-var> [-Q] -[FB]marker entry ..."
 	echo 1>&2 "Examples: onpath PATH -F $HOME/bin /usr/sbin"
@@ -148,6 +154,15 @@ function onpath
 	echo 1>&2 "          onpath PATH -Q /opt/SUNWspro/bin"
 	echo 1>&2 "          onpath MANPATH $HOME/man:/usr/local/gnu/man"
 	echo 1>&2 "          onpath ~/bin /usr/sbin"
+	echo
+	echo 'Adds directories to search paths. For each specified entry, onpath'
+	echo 'will first remove all instances of it from the specified <path-var>'
+	echo 'and then add it back to either the front (-F) or back (-B).'
+	echo 'Thus it always leaves exactly one instance of the new entry in'
+	echo 'the <path-var>. The default is -F. Appending an entry to the'
+	echo '-F or -B flag with no intervening whitespace, e.g. -F/usr/bin,'
+	echo 'indicates that you want to place the new entry directly in front'
+	echo 'or in back of the existing entry.'
 	return 1
     fi
     # Assumption: path variables start with capital letters!
@@ -159,7 +174,7 @@ function onpath
     fi
     while [[ "$1" = -* ]]; do
 	case "$1" in
-	    (-[Ff]*|-[Bb]*) action=$1 ;;
+	    (-[FB]*) action=$1 ;;
 	    (-[Qq]) missing=1 ;;
 	    (-*) echo 1>&2 "onpath: unrecognized flag $1"; return 1 ;;
 	esac
@@ -231,14 +246,13 @@ function onpath
     unset entry entries action pth_var pth_tmp mark missing
 }
 
-# Takes a base directory, such as /opt/FSFgdb, and runs onpath()
-# multiple times to add the appropriate subdirs to PATH, MANPATH, etc.
-# Flags which are recognized by onpath/offpath are passed along unmodified.
+##########################################################################
+
 function pkguse
 {
    typeset base flag abs rel quiet undo
    OPTIND=1
-   while getopts ":HhQqUu" flag; do
+   while getopts ":HhQU" flag; do
       case $flag in
 	 ([Hh])
 	    echo 1>&2 "Usage:    pkguse [-U] [-F|-B] base ..."
@@ -250,10 +264,14 @@ function pkguse
 	    echo 1>&2 "	  Use -L to add .../lib to LD_LIBRARY_PATH."
 	    echo 1>&2 "	  Warnings for nonexistent dirs are suppressed by -Q."
 	    echo 1>&2 "	  Any -F or -B flags are passed on to onpath."
+	    echo
+	    echo 'Takes a base directory, such as /opt/FSFgdb, and runs onpath()'
+	    echo 'multiple times to add the appropriate subdirs to PATH, MANPATH, etc.'
+	    echo 'Flags which are recognized by onpath/offpath are passed along unmodified.'
 	    return 1
 	    ;;
-	 ([Qq]) quiet=SET ;;
-	 ([Uu]) undo=SET ;;
+	 ([Q]) quiet=SET ;;
+	 ([U]) undo=SET ;;
 	 (\?) OPTIND=$((OPTIND-1)); break ;; # a -F or -B flag was hit
       esac
    done
@@ -299,16 +317,12 @@ function pkguse
 
 ##########################################################################
 
-# Removes all redundant entries from a given list of path variables,
-# default PATH. The -T flag causes entries that don't exist
-# to be removed as well, and -V prints any entries removed.
-# The -N flag shows what it would do without doing anything.
 function cleanpath
 {
    typeset entry oldifs pth_var old_path new_path prev testdirs
    typeset nmode verbose flag
    OPTIND=1
-   while getopts "HhNnTtVv" flag; do
+   while getopts "HhNTV" flag; do
       case $flag in
 	 ([Hh]|\?)
 	    echo 1>&2 "Usage: cleanpath [-NTV] [<path-var> ...]"
@@ -320,11 +334,16 @@ function cleanpath
 	    echo 1>&2 "          cleanpath -N (shows doubled entries in PATH)"
 	    echo 1>&2 "          cleanpath MANPATH (cleans MANPATH)"
 	    echo 1>&2 "          cleanpath -T LD_LIBRARY_PATH LD_RUN_PATH"
+	    echo
+	    echo 'Removes redundant entries from a given list of path variables,'
+	    echo 'default PATH. The -T flag causes entries that do not exist'
+	    echo 'to be removed as well, and -V prints any entries removed.'
+	    echo 'The -N flag shows what it would do without doing anything.'
 	    return 1
 	    ;;
-	 ([Nn]) nmode=1 verbose=1 ;;
-	 ([Vv]) verbose=1 ;;
-	 ([Tt]) testdirs=1 ;;
+	 ([N]) nmode=1 verbose=1 ;;
+	 ([V]) verbose=1 ;;
+	 ([T]) testdirs=1 ;;
       esac
    done
    shift $((OPTIND-1))
@@ -389,13 +408,14 @@ function cleanpath
 
 ##########################################################################
 
-# Prints the entries of the specified path variable (default: PATH)
-# to stdout, one per line.
 function listpath
 {
     typeset entry pth_var pth_tmp oldifs
     if [[ "$1" = -[Hh] ]]; then
 	echo 1>&2 "Usage: listpath [<path-var>]"
+	echo
+	echo 'Prints the entries of the specified path variable (default: PATH)'
+	echo 'to stdout, one per line.'
 	return 1
     fi
     pth_var=${1:-PATH}
@@ -414,92 +434,3 @@ function listpath
     fi
 }
 alias path=listpath
-
-# Traverses the specified path (default: PATH) and shows all files
-# found in more than one place along with those places, in order.
-# If a list is given, only those files are checked.
-function dblpath
-{
-   typeset entry dirs pth_var dbl check
-   if [[ "$1" = -[Hh] ]]; then
-      echo 1>&2 "Usage: dblpath [<path-var>] [file ...]"
-      echo 1>&2 "  Traverses the specified path (default: PATH) and shows all"
-      echo 1>&2 "files found in more than one place along with those places,"
-      echo 1>&2 "in order. If a list is given, only those files are checked."
-      return 1
-   fi
-   # Assumption: path variables start with capital letters!
-   # If first arg doesn't fit assumption, use PATH.
-   if [[ "$1" = [A-Z]* ]]; then
-      pth_var=$1; shift
-   else
-      pth_var=PATH
-   fi
-   check=$*
-   dirs=$(listpath $pth_var)
-   for entry in $dirs; do
-      if [[ -d $entry ]] && cd $entry; then
-	 set -- "$@" *
-	 cd $OLDPWD
-      fi
-   done
-
-   for dbl in ${check:-$($ECHO "$@" | tr ' ' '\012' | sort | uniq -d)}; do
-      $ECHO "$dbl:\c"
-      for entry in $dirs; do
-	 [[ ! -f $entry/$dbl ]] || $ECHO " $entry\c"
-      done
-      $ECHO
-   done
-}
-
-function whince
-{
-   typeset _path
-   if [[ "$1" = -[Hh] || $# -lt 1 || $# -gt 2 ]]; then
-      echo 1>&2 "Usage: whince [<path-var>] command"
-      echo 1>&2 "  This is an extended version of the 'whence' command."
-      echo 1>&2 "When given exactly one argument, it runs whence on that arg."
-      echo 1>&2 "If given two arguments, the first is assumed to be a path"
-      echo 1>&2 "var and the second arg is searched for along that path."
-      return 1
-   fi
-   if [[ $# -eq 1 ]]; then
-      _path=$(whence "$@") || return $?
-      $ECHO $_path
-      __=$_path
-   elif [[ "$1" = MANPATH ]]; then
-      for _path in $(listpath $1); do
-	 if /usr/bin/ls $_path/man*/$2.* 2>&-; then
-	    __=
-	    return 0
-	 fi
-      done
-      return 1
-   else
-      for _path in $(listpath $1); do
-	 if [[ -f $_path/$2 ]]; then
-	    $ECHO "$_path/$2"
-	    __=$_path
-	    return 0
-	 fi
-      done
-      return 1
-   fi
-}
-
-function _canonpath
-{
-    typeset _var _val
-    for _var in "$@"; do
-	eval _val=\$$_var
-	if [[ "$_val" != */* && "$_var" != */ ]]; then
-	    :
-	elif [[ -d "$_val" ]]; then
-	    cd "$_val" && cd "$OLDPWD" && eval $_var=$OLDPWD
-	elif [[ -f "$_val" ]]; then
-	    typeset _dir=${_val%/*} _base=${_val##*/}
-	    cd "$_dir" && cd "$OLDPWD" && eval $_var=$OLDPWD/$_base
-	fi
-    done
-}
